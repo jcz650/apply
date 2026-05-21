@@ -201,13 +201,13 @@ function render(){
     var storeVar=isCo?'coDec':'dec';
     function renderDecQ(d){
       if(d.purchaseOnly&&!isPurch)return'';
-      var r='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns"><div class="dec-btn'+(store[d.id]===yesLabel?' sel':'')+'" onclick="decClick(\''+storeVar+'\',\''+d.id+'\',\''+yesLabel+'\')">'+yesLabel+'</div><div class="dec-btn'+(store[d.id]===noLabel?' sel':'')+'" onclick="decClick(\''+storeVar+'\',\''+d.id+'\',\''+noLabel+'\')">'+noLabel+'</div></div></div>';
+      var r='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns"><div class="dec-btn'+(store[d.id]===yesLabel?' sel':'')+'" data-sv="'+storeVar+'" data-did="'+d.id+'" data-val="'+yesLabel+'">'+yesLabel+'</div><div class="dec-btn'+(store[d.id]===noLabel?' sel':'')+'" data-sv="'+storeVar+'" data-did="'+d.id+'" data-val="'+noLabel+'">'+noLabel+'</div></div></div>';
       // Conditional sub-questions
       if(d.trigger&&store[d.id]===d.trigger.val){
         for(var sub of d.trigger.show){
           if(sub.type==='choice'){
             r+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-            for(var opt of sub.opts)r+='<div class="pill" style="padding:10px;font-size:.82rem'+(store[sub.id]===opt?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'')+'" onclick="decClick(\''+storeVar+'\',\''+sub.id+'\',\''+esc(opt)+'\')">'+opt+'</div>';
+            for(var opt of sub.opts)r+='<div class="pill" style="padding:10px;font-size:.82rem'+(store[sub.id]===opt?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'')+'" data-sv="'+storeVar+'" data-did="'+sub.id+'" data-val="'+esc(opt)+'">'+opt+'</div>';
             r+='</div></div>';
           }else if(sub.type==='text'){
             r+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:6px">'+sub.q+'</div><input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+(sub.ph||'')+'" value="'+esc(store[sub.id]||'')+'" oninput="'+storeVar+'[\''+sub.id+'\']=this.value"></div>';
@@ -218,7 +218,9 @@ function render(){
     }
     var decList=isFin?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];for(var d of decList)h+=renderDecQ(d);
     h+='</div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button><div class="nav-center"><button class="ghost" onclick="goBack()">'+t.back+'</button></div>';
-    app.innerHTML=h;return;
+    app.innerHTML=h;
+    document.querySelector('.scroll-area').addEventListener('click',function(e){var el=e.target;while(el&&!el.classList.contains('scroll-area')){if(el.dataset&&el.dataset.sv&&el.dataset.did&&('val' in el.dataset)){window[el.dataset.sv][el.dataset.did]=el.dataset.val;var sp=this.scrollTop;render();var sa2=document.querySelector('.scroll-area');if(sa2)sa2.scrollTop=sp;return;}el=el.parentElement;}});
+    return;
   }
 
   // ATTESTATION
