@@ -69,7 +69,7 @@ h1{font-size:1.5rem;font-weight:700;color:#3a2e1e;margin:0 0 4px}
 <script>
 let lang='en',step=-1,phase='form',answers={},dec={},coDec={},attested=false;
 
-const LANG={en:{title:"Mortgage Application",subtitle:"with Jack Chen \u00b7 NMLS #2425956",company:"General Mortgage Capital Corporation (GMCC)",start:"Let's Get Started",startSub:"This takes about 5 minutes. One question at a time \u2014 nice and easy.",next:"Next \u2192",back:"\u2190 Back",submit:"Submit Application",review:"Review Your Answers",reviewSub:"Make sure everything looks right before submitting.",submitted:"Application Submitted!",submittedSub:"Jack will review your info and reach out shortly.",submittedNote:"Next steps: Jack will send you a DocuSign for authorization (eConsent, credit check & appraisal), and let you know which documents to upload.",copyText:"\ud83d\udccb Copy Summary",copied:"\u2713 Copied!",of:"of",lang:"\u4e2d\u6587",yes:"Yes",no:"No",years:"Years",months:"Months",decTitle:"Declarations",decSub:"Please answer Yes or No to each. These are standard questions required on all mortgage applications.",decProperty:"Property & Funding",decFinancial:"Financial History (Past 7 Years)",coDecTitle:"Co-Borrower Declarations",coDecSub:"Same questions for your co-borrower.",attestTitle:"Borrower Attestation",attestText:"I confirm that the information I've provided is accurate and complete to the best of my knowledge. I understand this information will be used to prepare my official mortgage application (URLA). I authorize the loan officer to use this data to generate my full application and proceed with next steps.",attestCheck:"I have read and agree to the above attestation.",textJack:"\ud83d\udcac Text My Application to Jack",emailJack:"\u2709\ufe0f Email My Application to Jack"},zh:{title:"\u623f\u5c4b\u8d37\u6b3e\u7533\u8bf7",subtitle:"Jack Chen \u00b7 NMLS #2425956",company:"\u4e07\u901a\u8d37\u6b3e\u94f6\u884c (GMCC)",start:"\u5f00\u59cb\u7533\u8bf7",startSub:"\u5927\u7ea6\u9700\u89815\u5206\u949f\uff0c\u4e00\u6b21\u4e00\u4e2a\u95ee\u9898\uff0c\u8f7b\u677e\u586b\u5199\u3002",next:"\u4e0b\u4e00\u6b65 \u2192",back:"\u2190 \u8fd4\u56de",submit:"\u63d0\u4ea4\u7533\u8bf7",review:"\u786e\u8ba4\u60a8\u7684\u56de\u7b54",reviewSub:"\u63d0\u4ea4\u524d\u8bf7\u786e\u8ba4\u4fe1\u606f\u662f\u5426\u6b63\u786e\u3002",submitted:"\u7533\u8bf7\u5df2\u63d0\u4ea4\uff01",submittedSub:"Jack \u5c06\u4f1a\u5ba1\u6838\u60a8\u7684\u4fe1\u606f\u5e76\u5c3d\u5feb\u8054\u7cfb\u60a8\u3002",submittedNote:"\u4e0b\u4e00\u6b65\uff1aJack \u5c06\u901a\u8fc7 DocuSign \u53d1\u9001\u6388\u6743\u4e66\uff08\u7535\u5b50\u7b7e\u7f72\u540c\u610f\u3001\u4fe1\u7528\u5ba1\u6838\u548c\u623f\u5c4b\u4f30\u4ef7\uff09\uff0c\u5e76\u544a\u77e5\u60a8\u9700\u8981\u4e0a\u4f20\u7684\u6587\u4ef6\u3002",copyText:"\ud83d\udccb \u590d\u5236\u6458\u8981",copied:"\u2713 \u5df2\u590d\u5236\uff01",of:"/",lang:"English",yes:"\u662f",no:"\u5426",years:"\u5e74",months:"\u6708",decTitle:"\u8d37\u6b3e\u7533\u8bf7\u4eba\u58f0\u660e",decSub:"\u8bf7\u56de\u7b54\u4ee5\u4e0b\u6807\u51c6\u8d37\u6b3e\u7533\u8bf7\u95ee\u9898\uff0c\u9009\u62e9\u300c\u662f\u300d\u6216\u300c\u5426\u300d\u3002",decProperty:"\u623f\u4ea7\u4e0e\u8d44\u91d1",decFinancial:"\u8d22\u52a1\u5386\u53f2\uff08\u8fc7\u53bb7\u5e74\uff09",coDecTitle:"\u5171\u540c\u501f\u6b3e\u4eba\u58f0\u660e",coDecSub:"\u8bf7\u5171\u540c\u501f\u6b3e\u4eba\u56de\u7b54\u76f8\u540c\u7684\u95ee\u9898\u3002",attestTitle:"\u501f\u6b3e\u4eba\u58f0\u660e",attestText:"\u672c\u4eba\u7279\u6b64\u58f0\u660e\u5e76\u4fdd\u8bc1\uff0c\u672c\u4eba\u5728\u672c\u8868\u683c\u4e2d\u63d0\u4f9b\u7684\u4fe1\u606f\u5747\u771f\u5b9e\u3001\u51c6\u786e\u3001\u5b8c\u6574\uff0c\u4e14\u7b26\u5408\u672c\u4eba\u6240\u77e5\u7684\u6700\u4f73\u60c5\u51b5\u3002\u672c\u4eba\u7406\u89e3\u5e76\u540c\u610f\uff0c\u8be5\u4fe1\u606f\u5c06\u7528\u4e8e\u51c6\u5907\u672c\u4eba\u6b63\u5f0f\u62b5\u62bc\u8d37\u6b3e\u7533\u8bf7\uff08URLA\uff09\u3002\u672c\u4eba\u901a\u8fc7\u52fe\u9009\u4e0b\u65b9\u590d\u9009\u6846\uff0c\u660e\u786e\u6388\u6743\u8d37\u6b3e\u4e13\u5458\u4f7f\u7528\u672c\u8868\u683c\u6240\u8f7d\u4fe1\u606f\uff0c\u4ee5\u751f\u6210\u5b8c\u6574\u7684\u8d37\u6b3e\u7533\u8bf7\uff0c\u5e76\u63a8\u8fdb\u76f8\u5173\u8d37\u6b3e\u5ba1\u6279\u6d41\u7a0b\u3002",attestCheck:"\u672c\u4eba\u5df2\u9605\u8bfb\u5e76\u540c\u610f\u4e0a\u8ff0\u58f0\u660e\uff0c\u5e76\u63d0\u4ea4\u672c\u7533\u8bf7\u3002",textJack:"\ud83d\udcac \u53d1\u9001\u7533\u8bf7\u77ed\u4fe1\u7ed9 Jack",emailJack:"\u2709\ufe0f \u53d1\u9001\u7533\u8bf7\u90ae\u4ef6\u7ed9 Jack"}};
+const LANG={en:{title:"Mortgage Application",subtitle:"with Jack Chen \u00b7 NMLS #2425956",company:"General Mortgage Capital Corporation",start:"Let's Get Started",startSub:"This takes about a few minutes \u2014 nice and easy.",next:"Next \u2192",back:"\u2190 Back",submit:"Submit Application",review:"Review Your Answers",reviewSub:"Make sure everything looks right before submitting.",submitted:"Application Submitted!",submittedSub:"Jack will review your info and reach out shortly.",submittedNote:"Next steps: Jack will send you a DocuSign for authorization (eConsent, credit check & appraisal), and let you know which documents to upload.",copyText:"\ud83d\udccb Copy Summary",copied:"\u2713 Copied!",of:"of",lang:"\u4e2d\u6587",yes:"Yes",no:"No",years:"Years",months:"Months",decTitle:"Declarations",decSub:"Please answer Yes or No to each. These are standard questions required on all mortgage applications.",decProperty:"Property & Funding",decFinancial:"Financial History (Past 7 Years)",coDecTitle:"Co-Borrower Declarations",coDecSub:"Same questions for your co-borrower.",attestTitle:"Borrower Attestation",attestText:"I confirm that the information I've provided is accurate and complete to the best of my knowledge. I understand this information will be used to prepare my official mortgage application (URLA). I authorize the loan officer to use this data to generate my full application and proceed with next steps.",attestCheck:"I have read and agree to the above attestation.",textJack:"\ud83d\udcac Text My Application to Jack",emailJack:"\u2709\ufe0f Email My Application to Jack"},zh:{title:"\u623f\u5c4b\u8d37\u6b3e\u7533\u8bf7",subtitle:"Jack Chen \u00b7 NMLS #2425956",company:"\u4e07\u901a\u8d37\u6b3e\u94f6\u884c",start:"\u5f00\u59cb\u7533\u8bf7",startSub:"\u53ea\u9700\u51e0\u5206\u949f\uff0c\u8f7b\u677e\u586b\u5199\u3002",next:"\u4e0b\u4e00\u6b65 \u2192",back:"\u2190 \u8fd4\u56de",submit:"\u63d0\u4ea4\u7533\u8bf7",review:"\u786e\u8ba4\u60a8\u7684\u56de\u7b54",reviewSub:"\u63d0\u4ea4\u524d\u8bf7\u786e\u8ba4\u4fe1\u606f\u662f\u5426\u6b63\u786e\u3002",submitted:"\u7533\u8bf7\u5df2\u63d0\u4ea4\uff01",submittedSub:"Jack \u5c06\u4f1a\u5ba1\u6838\u60a8\u7684\u4fe1\u606f\u5e76\u5c3d\u5feb\u8054\u7cfb\u60a8\u3002",submittedNote:"\u4e0b\u4e00\u6b65\uff1aJack \u5c06\u901a\u8fc7 DocuSign \u53d1\u9001\u6388\u6743\u4e66\uff08\u7535\u5b50\u7b7e\u7f72\u540c\u610f\u3001\u4fe1\u7528\u5ba1\u6838\u548c\u623f\u5c4b\u4f30\u4ef7\uff09\uff0c\u5e76\u544a\u77e5\u60a8\u9700\u8981\u4e0a\u4f20\u7684\u6587\u4ef6\u3002",copyText:"\ud83d\udccb \u590d\u5236\u6458\u8981",copied:"\u2713 \u5df2\u590d\u5236\uff01",of:"/",lang:"English",yes:"\u662f",no:"\u5426",years:"\u5e74",months:"\u6708",decTitle:"\u8d37\u6b3e\u7533\u8bf7\u4eba\u58f0\u660e",decSub:"\u8bf7\u56de\u7b54\u4ee5\u4e0b\u6807\u51c6\u8d37\u6b3e\u7533\u8bf7\u95ee\u9898\uff0c\u9009\u62e9\u300c\u662f\u300d\u6216\u300c\u5426\u300d\u3002",decProperty:"\u623f\u4ea7\u4e0e\u8d44\u91d1",decFinancial:"\u8d22\u52a1\u5386\u53f2\uff08\u8fc7\u53bb7\u5e74\uff09",coDecTitle:"\u5171\u540c\u501f\u6b3e\u4eba\u58f0\u660e",coDecSub:"\u8bf7\u5171\u540c\u501f\u6b3e\u4eba\u56de\u7b54\u76f8\u540c\u7684\u95ee\u9898\u3002",attestTitle:"\u501f\u6b3e\u4eba\u58f0\u660e",attestText:"\u672c\u4eba\u7279\u6b64\u58f0\u660e\u5e76\u4fdd\u8bc1\uff0c\u672c\u4eba\u5728\u672c\u8868\u683c\u4e2d\u63d0\u4f9b\u7684\u4fe1\u606f\u5747\u771f\u5b9e\u3001\u51c6\u786e\u3001\u5b8c\u6574\uff0c\u4e14\u7b26\u5408\u672c\u4eba\u6240\u77e5\u7684\u6700\u4f73\u60c5\u51b5\u3002\u672c\u4eba\u7406\u89e3\u5e76\u540c\u610f\uff0c\u8be5\u4fe1\u606f\u5c06\u7528\u4e8e\u51c6\u5907\u672c\u4eba\u6b63\u5f0f\u62b5\u62bc\u8d37\u6b3e\u7533\u8bf7\uff08URLA\uff09\u3002\u672c\u4eba\u901a\u8fc7\u52fe\u9009\u4e0b\u65b9\u590d\u9009\u6846\uff0c\u660e\u786e\u6388\u6743\u8d37\u6b3e\u4e13\u5458\u4f7f\u7528\u672c\u8868\u683c\u6240\u8f7d\u4fe1\u606f\uff0c\u4ee5\u751f\u6210\u5b8c\u6574\u7684\u8d37\u6b3e\u7533\u8bf7\uff0c\u5e76\u63a8\u8fdb\u76f8\u5173\u8d37\u6b3e\u5ba1\u6279\u6d41\u7a0b\u3002",attestCheck:"\u672c\u4eba\u5df2\u9605\u8bfb\u5e76\u540c\u610f\u4e0a\u8ff0\u58f0\u660e\uff0c\u5e76\u63d0\u4ea4\u672c\u7533\u8bf7\u3002",textJack:"\ud83d\udcac \u53d1\u9001\u7533\u8bf7\u77ed\u4fe1\u7ed9 Jack",emailJack:"\u2709\ufe0f \u53d1\u9001\u7533\u8bf7\u90ae\u4ef6\u7ed9 Jack"}};
 
 const DEC_PROPERTY={en:[{id:"occupyProperty",q:"Will you occupy the property as your primary residence?"},{id:"sellerRelationship",q:"Do you have a family relationship or business affiliation with the seller?",purchaseOnly:true},{id:"borrowedFunds",q:"Are you borrowing any money for this transaction (e.g., closing costs or down payment) not disclosed on this application?"},{id:"otherMortgage",q:"Have you or will you be applying for a mortgage on another property not disclosed on this application?"},{id:"newCredit",q:"Have you or will you be applying for any new credit (e.g., installment loan, credit card) not disclosed on this application?"},{id:"priorityLien",q:"Will this property be subject to a lien that could take priority over the first mortgage (e.g., PACE)?"}],zh:[{id:"occupyProperty",q:"\u60a8\u662f\u5426\u4f1a\u81ea\u4f4f\u8be5\u623f\u4ea7\uff1f"},{id:"sellerRelationship",q:"\u60a8\u662f\u5426\u4e0e\u623f\u4ea7\u5356\u65b9\u6709\u5bb6\u5ead\u5173\u7cfb\u6216\u4e1a\u52a1\u5173\u8054\uff1f",purchaseOnly:true},{id:"borrowedFunds",q:"\u60a8\u662f\u5426\u4e3a\u6b64\u6b21\u4ea4\u6613\u501f\u6b3e\uff08\u5982\u9996\u4ed8\u6216\u8fc7\u6237\u8d39\uff09\uff0c\u4e14\u672a\u5728\u6b64\u7533\u8bf7\u4e2d\u62ab\u9732\uff1f"},{id:"otherMortgage",q:"\u60a8\u662f\u5426\u5df2\u7533\u8bf7\u6216\u5c06\u7533\u8bf7\u53e6\u4e00\u5904\u623f\u4ea7\u7684\u62b5\u62bc\u8d37\u6b3e\uff0c\u4e14\u672a\u5728\u6b64\u7533\u8bf7\u4e2d\u62ab\u9732\uff1f"},{id:"newCredit",q:"\u60a8\u662f\u5426\u5df2\u7533\u8bf7\u6216\u5c06\u7533\u8bf7\u65b0\u7684\u4fe1\u7528\u989d\u5ea6\uff0c\u4e14\u672a\u5728\u6b64\u7533\u8bf7\u4e2d\u62ab\u9732\uff1f"},{id:"priorityLien",q:"\u8be5\u623f\u4ea7\u662f\u5426\u4f1a\u53d7\u5230\u4f18\u5148\u7559\u7f6e\u6743\u5f71\u54cd\uff08\u5982PACE\u8ba1\u5212\uff09\uff1f"}]};
 const DEC_FINANCIAL={en:[{id:"coSigner",q:"Are you a co-signer or guarantor on any debt not disclosed on this application?"},{id:"judgments",q:"Are there any outstanding judgments against you?"},{id:"federalDebt",q:"Are you currently delinquent or in default on a Federal debt?"},{id:"lawsuit",q:"Are you a party to a lawsuit with potential personal financial liability?"},{id:"deedInLieu",q:"Have you conveyed title to any property in lieu of foreclosure in the past 7 years?"},{id:"shortSale",q:"Have you completed a short sale in the past 7 years?"},{id:"foreclosure",q:"Have you had property foreclosed upon in the last 7 years?"},{id:"bankruptcy",q:"Have you declared bankruptcy within the past 7 years?"}],zh:[{id:"coSigner",q:"\u60a8\u662f\u5426\u662f\u672a\u62ab\u9732\u503a\u52a1\u7684\u5171\u540c\u7b7e\u7f72\u4eba\u6216\u62c5\u4fdd\u4eba\uff1f"},{id:"judgments",q:"\u60a8\u662f\u5426\u6709\u672a\u507f\u8fd8\u7684\u5224\u51b3\uff1f"},{id:"federalDebt",q:"\u60a8\u662f\u5426\u62d6\u6b20\u6216\u8fdd\u7ea6\u8054\u90a6\u503a\u52a1\uff1f"},{id:"lawsuit",q:"\u60a8\u662f\u5426\u6d89\u53ca\u53ef\u80fd\u627f\u62c5\u8d22\u52a1\u8d23\u4efb\u7684\u8bc9\u8bbc\uff1f"},{id:"deedInLieu",q:"\u8fc7\u53bb7\u5e74\u662f\u5426\u4ee5\u4ee3\u66ff\u6b62\u8d4e\u65b9\u5f0f\u8f6c\u8ba9\u8fc7\u4ea7\u6743\uff1f"},{id:"shortSale",q:"\u8fc7\u53bb7\u5e74\u662f\u5426\u5b8c\u6210\u8fc7\u77ed\u552e\uff1f"},{id:"foreclosure",q:"\u8fc7\u53bb7\u5e74\u662f\u5426\u6709\u623f\u4ea7\u88ab\u6b62\u8d4e\uff1f"},{id:"bankruptcy",q:"\u8fc7\u53bb7\u5e74\u662f\u5426\u5ba3\u5e03\u8fc7\u7834\u4ea7\uff1f"}]};
@@ -141,7 +141,7 @@ function genSummary(){
 
 function goNext(){const steps=getSteps();if(step<steps.length-1)step++;else phase="review";render();}
 function goBack(){if(step>0)step--;else step=-1;render();}
-function pick(val){const steps=getSteps();answers[steps[step].id]=val;setTimeout(()=>{goNext();},200);}
+function pick(val){const steps=getSteps();answers[steps[step].id]=val;setTimeout(function(){goNext();},200);}
 
 function toggleLang(){
   const map=lang==='en'?MAP_EN_ZH:MAP_ZH_EN;
@@ -173,13 +173,13 @@ function render(){
     h+='<h2 style="font-size:1.3rem;font-weight:700;color:#3a2e1e;text-align:center;margin:0 0 4px">'+t.review+'</h2>';
     h+='<p style="color:#8a7a60;font-size:.82rem;text-align:center;margin-bottom:20px">'+t.reviewSub+'</p>';
     h+='<div class="review-scroll">';
-    let sec="";
+    var sec="";
     for(const st of steps){
       if(st.section&&st.section!==sec){sec=st.section;h+='<div class="review-section"><div class="review-label">'+sec+'</div>';}
       if(st.type==="declarations"){for(const d of[...DEC_PROPERTY[lang],...DEC_FINANCIAL[lang]]){if(d.purchaseOnly&&!isPurch)continue;if(dec[d.id])h+='<div class="review-row"><span class="review-q">'+d.q+'</span><span class="review-a">'+esc(dec[d.id])+'</span></div>';}}
       else if(st.type==="coDeclarations"){for(const d of[...DEC_PROPERTY[lang],...DEC_FINANCIAL[lang]]){if(d.purchaseOnly&&!isPurch)continue;if(coDec[d.id])h+='<div class="review-row"><span class="review-q">'+d.q+'</span><span class="review-a">'+esc(coDec[d.id])+'</span></div>';}}
-      else if(st.type==="multi"){const vals=st.fields.map(f=>answers[f.id]||'').filter(Boolean).join(' ');if(vals)h+='<div class="review-row"><span class="review-q">'+st.q+'</span><span class="review-a">'+esc(vals)+'</span></div>';}
-      else if(st.type!=="attestation"&&answers[st.id]){let v=answers[st.id];if(st.type==="duration"){const p=v.split("|");v=(p[0]||0)+" "+t.years+", "+(p[1]||0)+" "+t.months;}h+='<div class="review-row"><span class="review-q">'+st.q+'</span><span class="review-a">'+esc(v)+'</span></div>';}
+      else if(st.type==="multi"){var vals=st.fields.map(function(f){return answers[f.id]||'';}).filter(Boolean).join(' ');if(vals)h+='<div class="review-row"><span class="review-q">'+st.q+'</span><span class="review-a">'+esc(vals)+'</span></div>';}
+      else if(st.type!=="attestation"&&answers[st.id]){var v=answers[st.id];if(st.type==="duration"){var p=v.split("|");v=(p[0]||0)+" "+t.years+", "+(p[1]||0)+" "+t.months;}h+='<div class="review-row"><span class="review-q">'+st.q+'</span><span class="review-a">'+esc(v)+'</span></div>';}
     }
     h+='</div></div>';
     h+='<button class="primary" onclick="phase=\'done\';render()">'+t.submit+'</button>';
@@ -189,8 +189,8 @@ function render(){
 
   if(phase==='done'){
     document.body.style.justifyContent='center';
-    const summary=encodeURIComponent(genSummary());
-    const subj=encodeURIComponent("Loan Application - "+(answers.borrowerFirst||"")+" "+(answers.borrowerLast||""));
+    var summary=encodeURIComponent(genSummary());
+    var subj=encodeURIComponent("Loan Application - "+(answers.borrowerFirst||"")+" "+(answers.borrowerLast||""));
     h+='<div style="text-align:center"><div class="done-check">\u2713</div>';
     h+='<h2 class="done-title">'+t.submitted+'</h2>';
     h+='<p style="color:#6b5c42;font-size:.92rem;line-height:1.5;margin-bottom:6px">'+t.submittedSub+'</p>';
@@ -208,9 +208,9 @@ function render(){
   document.body.style.justifyContent='center';
 
   if(cur.type==='declarations'||cur.type==='coDeclarations'){
-    const isCo=cur.type==='coDeclarations';
-    const store=isCo?coDec:dec;
-    const yesLabel=lang==='en'?'Yes':'\u662f';const noLabel=lang==='en'?'No':'\u5426';
+    var isCo=cur.type==='coDeclarations';
+    var store=isCo?coDec:dec;
+    var yesLabel=lang==='en'?'Yes':'\u662f';var noLabel=lang==='en'?'No':'\u5426';
     h+='<button class="lang-btn" onclick="toggleLang()">'+t.lang+'</button>';
     h+='<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span class="sec-label">'+cur.section+'</span><span style="font-size:.72rem;color:#a0926e">'+(step+1)+' '+t.of+' '+total+'</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+((step+1)/total*100)+'%"></div></div></div>';
     h+='<h2 style="font-size:1.15rem;font-weight:700;color:#3a2e1e;margin:16px 0 4px">'+(isCo?t.coDecTitle:t.decTitle)+'</h2>';
@@ -219,11 +219,11 @@ function render(){
     h+='<div class="dec-section-label">'+t.decProperty+'</div>';
     for(const d of DEC_PROPERTY[lang]){
       if(d.purchaseOnly&&!isPurch)continue;
-      h+='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns"><div class="dec-btn'+(store[d.id]===yesLabel?' sel':'')+'" onclick="'+(isCo?'coDec':'dec')+'[\''+d.id+'\']='+(lang==='en'?"'Yes'":"'\u662f'")+';render()">'+yesLabel+'</div><div class="dec-btn'+(store[d.id]===noLabel?' sel':'')+'" onclick="'+(isCo?'coDec':'dec')+'[\''+d.id+'\']='+(lang==='en'?"'No'":"'\u5426'")+';render()">'+noLabel+'</div></div></div>';
+      h+='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns"><div class="dec-btn'+(store[d.id]===yesLabel?' sel':'')+'" onclick="'+(isCo?'coDec':'dec')+'[\''+d.id+'\']=\''+yesLabel+'\';render()">'+yesLabel+'</div><div class="dec-btn'+(store[d.id]===noLabel?' sel':'')+'" onclick="'+(isCo?'coDec':'dec')+'[\''+d.id+'\']=\''+noLabel+'\';render()">'+noLabel+'</div></div></div>';
     }
     h+='<div class="dec-section-label mt">'+t.decFinancial+'</div>';
     for(const d of DEC_FINANCIAL[lang]){
-      h+='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns"><div class="dec-btn'+(store[d.id]===yesLabel?' sel':'')+'" onclick="'+(isCo?'coDec':'dec')+'[\''+d.id+'\']='+(lang==='en'?"'Yes'":"'\u662f'")+';render()">'+yesLabel+'</div><div class="dec-btn'+(store[d.id]===noLabel?' sel':'')+'" onclick="'+(isCo?'coDec':'dec')+'[\''+d.id+'\']='+(lang==='en'?"'No'":"'\u5426'")+';render()">'+noLabel+'</div></div></div>';
+      h+='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns"><div class="dec-btn'+(store[d.id]===yesLabel?' sel':'')+'" onclick="'+(isCo?'coDec':'dec')+'[\''+d.id+'\']=\''+yesLabel+'\';render()">'+yesLabel+'</div><div class="dec-btn'+(store[d.id]===noLabel?' sel':'')+'" onclick="'+(isCo?'coDec':'dec')+'[\''+d.id+'\']=\''+noLabel+'\';render()">'+noLabel+'</div></div></div>';
     }
     if(store.bankruptcy===yesLabel){
       h+='<div style="padding:12px 0"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+(lang==='en'?'Identify the type(s) of bankruptcy:':'\u8bf7\u9009\u62e9\u7834\u4ea7\u7c7b\u578b\uff1a')+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
@@ -259,27 +259,27 @@ function render(){
     h+='</div>';
   }
   if(cur.type==='text'){
-    const canGo=cur.req?!!answers[cur.id]:true;
+    var canGo=cur.req?!!answers[cur.id]:true;
     h+='<input class="text-input" id="qinput" type="text" placeholder="'+esc(cur.ph||'')+'" value="'+esc(answers[cur.id]||'')+'" oninput="answers[\''+cur.id+'\']=this.value;document.getElementById(\'nextbtn\').disabled=this.value===\'\'&&'+cur.req+'" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()">';
     h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(canGo?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';
   }
   if(cur.type==='duration'){
-    const parsed=(answers[cur.id]||'').split('|');const yrs=parsed[0]||'';const mos=parsed[1]||'';
+    var parsed=(answers[cur.id]||'').split('|');var yrs=parsed[0]||'';var mos=parsed[1]||'';
     h+='<div class="dur-wrap"><div style="flex:1"><label class="dur-label">'+t.years+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']\'||\'\'\').split(\'|\');answers[\''+cur.id+'\']=this.value+\'|\'+(p[1]||\'\');render()"><option value="">--</option>';
-    for(let i=0;i<=50;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';
+    for(var i=0;i<=50;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';
     h+='</select></div><div style="flex:1"><label class="dur-label">'+t.months+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']\'||\'\'\').split(\'|\');answers[\''+cur.id+'\']=((p[0]||\'\'))+\'|\'+this.value;render()"><option value="">--</option>';
-    for(let i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';
+    for(var i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';
     h+='</select></div></div>';
     h+='<button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button>';
   }
   if(cur.type==='multi'){
-    const cols=cur.fields.length>2?2:cur.fields.length;
+    var cols=cur.fields.length>2?2:cur.fields.length;
     h+='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:10px">';
     for(const f of cur.fields){
       h+='<div><input class="text-input" id="qinput_'+f.id+'" type="text" placeholder="'+esc(f.ph||'')+'" value="'+esc(answers[f.id]||'')+'" oninput="answers[\''+f.id+'\']=this.value;checkMultiNext()" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"></div>';
     }
     h+='</div>';
-    const allFilled=cur.fields.every(f=>!f.req||answers[f.id]);
+    var allFilled=cur.fields.every(function(f){return !f.req||answers[f.id];});
     h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(allFilled?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';
   }
   h+='</div>';
@@ -292,13 +292,13 @@ function render(){
 
 function checkMultiNext(){
   const steps=getSteps();const cur=steps[step];if(!cur||cur.type!=='multi')return;
-  const allFilled=cur.fields.every(f=>!f.req||answers[f.id]);
-  const btn=document.getElementById('nextbtn');if(btn)btn.disabled=!allFilled;
+  var allFilled=cur.fields.every(function(f){return !f.req||answers[f.id];});
+  var btn=document.getElementById('nextbtn');if(btn)btn.disabled=!allFilled;
 }
 
 function copySum(){
   navigator.clipboard.writeText(genSummary()).then(function(){
-    const btn=document.getElementById('copyBtn');if(btn){btn.textContent=LANG[lang].copied;setTimeout(function(){btn.textContent=LANG[lang].copyText;},2000);}
+    var btn=document.getElementById('copyBtn');if(btn){btn.textContent=LANG[lang].copied;setTimeout(function(){btn.textContent=LANG[lang].copyText;},2000);}
   });
 }
 
