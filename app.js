@@ -182,28 +182,47 @@ function render(){
 
   document.body.style.justifyContent='center';
 
-  // DECLARATIONS
+  // DECLARATIONS - buttons with direct onclick
   if(cur.type==='decProperty'||cur.type==='decFinancial'||cur.type==='coDecProperty'||cur.type==='coDecFinancial'){
-    var isCo=(cur.type==='coDecProperty'||cur.type==='coDecFinancial');var isFin=(cur.type==='decFinancial'||cur.type==='coDecFinancial'),store=isCo?coDec:dec,yesLabel=lang==='en'?'Yes':'\u662f',noLabel=lang==='en'?'No':'\u5426';
-    h+='<button class="lang-btn" onclick="toggleLang()">'+t.lang+'</button><div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span class="sec-label">'+cur.section+'</span><span style="font-size:.72rem;color:#a0926e">'+(step+1)+' '+t.of+' '+total+'</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+((step+1)/total*100)+'%"></div></div></div><h2 style="font-size:1.15rem;font-weight:700;color:#3a2e1e;margin:16px 0 4px">'+(isCo?t.coDecTitle:t.decTitle)+'</h2><p style="font-size:.82rem;color:#8a7a60;margin-bottom:16px;line-height:1.4">'+(isCo?t.coDecSub:t.decSub)+'</p><div class="scroll-area"><div class="dec-section-label">'+(isFin?t.decFinancial:t.decProperty)+'</div>';
+    var isCo=(cur.type==='coDecProperty'||cur.type==='coDecFinancial');
+    var isFin=(cur.type==='decFinancial'||cur.type==='coDecFinancial');
+    var store=isCo?coDec:dec;
+    var yesLabel=lang==='en'?'Yes':'\u662f';
+    var noLabel=lang==='en'?'No':'\u5426';
     var storeVar=isCo?'coDec':'dec';
-    function renderDecQ(d){
-      if(d.purchaseOnly&&!isPurch)return'';
-      var r='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns"><div class="dec-btn'+(store[d.id]===yesLabel?' sel':'')+'" data-sv="'+storeVar+'" data-did="'+d.id+'" data-val="'+yesLabel+'">'+yesLabel+'</div><div class="dec-btn'+(store[d.id]===noLabel?' sel':'')+'" data-sv="'+storeVar+'" data-did="'+d.id+'" data-val="'+noLabel+'">'+noLabel+'</div></div></div>';
-      if(d.trigger&&store[d.id]===d.trigger.val){
-        for(var sub of d.trigger.show){
+    h+='<button class="lang-btn" onclick="toggleLang()">'+t.lang+'</button>';
+    h+='<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span class="sec-label">'+cur.section+'</span><span style="font-size:.72rem;color:#a0926e">'+(step+1)+' '+t.of+' '+total+'</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+((step+1)/total*100)+'%"></div></div></div>';
+    h+='<h2 style="font-size:1.15rem;font-weight:700;color:#3a2e1e;margin:16px 0 4px">'+(isCo?t.coDecTitle:t.decTitle)+'</h2>';
+    h+='<p style="font-size:.82rem;color:#8a7a60;margin-bottom:16px;line-height:1.4">'+(isCo?t.coDecSub:t.decSub)+'</p>';
+    h+='<div class="scroll-area"><div class="dec-section-label">'+(isFin?t.decFinancial:t.decProperty)+'</div>';
+    var decList=isFin?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];
+    for(var di=0;di<decList.length;di++){
+      var d=decList[di];
+      if(d.purchaseOnly&&!isPurch)continue;
+      var did=d.id;
+      var ysel=(store[did]===yesLabel)?' sel':'';
+      var nsel=(store[did]===noLabel)?' sel':'';
+      h+='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns">';
+      h+='<button class="dec-btn'+ysel+'" onclick="'+storeVar+'[\''+did+'\']='+'\''+(lang==='en'?'Yes':'\\u662f')+'\''+';render()">'+yesLabel+'</button>';
+      h+='<button class="dec-btn'+nsel+'" onclick="'+storeVar+'[\''+did+'\']='+'\''+(lang==='en'?'No':'\\u5426')+'\''+';render()">'+noLabel+'</button>';
+      h+='</div></div>';
+      if(d.trigger&&store[did]===d.trigger.val){
+        for(var si=0;si<d.trigger.show.length;si++){
+          var sub=d.trigger.show[si];
           if(sub.type==='choice'){
-            r+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-            for(var opt of sub.opts)r+='<div class="pill" style="padding:10px;font-size:.82rem'+(store[sub.id]===opt?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'')+'" data-sv="'+storeVar+'" data-did="'+sub.id+'" data-val="'+esc(opt)+'">'+opt+'</div>';
-            r+='</div></div>';
-          }else if(sub.type==='text'){
-            r+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:6px">'+sub.q+'</div><input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+(sub.ph||'')+'" value="'+esc(store[sub.id]||'')+'" oninput="'+storeVar+'[\''+sub.id+'\' ]=this.value"></div>';
+            h+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+            for(var oi=0;oi<sub.opts.length;oi++){
+              var opt=sub.opts[oi];
+              var osel=(store[sub.id]===opt)?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';
+              h+='<button class="pill" style="padding:10px;font-size:.82rem'+osel+'" onclick="'+storeVar+'[\''+sub.id+'\']='+'\'' +esc(opt).replace(/'/g,"\\'")+'\'' +';render()">'+opt+'</button>';
+            }
+            h+='</div></div>';
+          } else if(sub.type==='text'){
+            h+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:6px">'+sub.q+'</div><input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+(sub.ph||'')+'" value="'+esc(store[sub.id]||'')+'" oninput="'+storeVar+'[\''+sub.id+'\']=this.value"></div>';
           }
         }
       }
-      return r;
     }
-    var decList=isFin?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];for(var d of decList)h+=renderDecQ(d);
     h+='</div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button><div class="nav-center"><button class="ghost" onclick="goBack()">'+t.back+'</button></div>';
     app.innerHTML=h;
     return;
@@ -255,22 +274,4 @@ function render(){
 function checkDropdowns(){var btn=document.getElementById('nextbtn');if(btn)btn.disabled=!(answers.occupancy&&answers.propertyType);}
 function checkMultiNext(){var steps=getSteps(),cur=steps[step];if(!cur||cur.type!=='multi')return;var allFilled=cur.fields.every(function(f){return !f.req||answers[f.id];});var btn=document.getElementById('nextbtn');if(btn)btn.disabled=!allFilled;}
 function copySum(){navigator.clipboard.writeText(genSummary()).then(function(){var btn=document.getElementById('copyBtn');if(btn){btn.textContent=LANG[lang].copied;setTimeout(function(){btn.textContent=LANG[lang].copyText;},2000);}});}
-
-// Single persistent delegated handler on #app — survives all re-renders
-document.getElementById('app').addEventListener('click',function(e){
-  var el=e.target;
-  while(el&&el.id!=='app'){
-    if(el.dataset&&el.dataset.sv&&el.dataset.did&&('val' in el.dataset)){
-      var sa=document.querySelector('.scroll-area');
-      var sp=sa?sa.scrollTop:0;
-      window[el.dataset.sv][el.dataset.did]=el.dataset.val;
-      render();
-      var sa2=document.querySelector('.scroll-area');
-      if(sa2)sa2.scrollTop=sp;
-      return;
-    }
-    el=el.parentElement;
-  }
-});
-
 render();
