@@ -1,9 +1,7 @@
 // EmailJS config — replace with your own from emailjs.com (free 200/mo)
-// Service ID: create a service connected to Gmail/Outlook in EmailJS dashboard
-// Template ID: create a template with variables: {{to_email}}, {{subject}}, {{borrower_name}}, {{summary}}, {{mismo_xml}}
-const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // from EmailJS Account > API Keys
-const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // from EmailJS > Email Services
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // from EmailJS > Email Templates
+const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
+const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
+const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
 const JACK_EMAIL = 'jack.chen@gmccloan.com';
 
 let lang='en',step=-1,phase='form',answers={},dec={},coDec={},attested=false,emailSent=false;
@@ -24,7 +22,12 @@ const DEC_PROPERTY={en:[
   {id:"newCredit",q:"Have you or will you be applying for any new credit (e.g., installment loan, credit card, etc.) on or before closing this loan that is not disclosed on this application?"},
   {id:"priorityLien",q:"Will this property be subject to a lien that could take priority over the first mortgage lien, such as a clean energy lien paid through your property taxes (e.g., PACE)?"}
 ],zh:[
-  {id:"occupyProperty",q:"\u60a8\u662f\u5426\u4f1a\u81ea\u4f4f\u8be5\u623f\u4ea7\uff1f",trigger:{val:"\u662f",show:[{id:"priorProperty",q:"\u60a8\u8fc7\u53bb\u4e09\u5e74\u662f\u5426\u6301\u6709\u8fc7\u5176\u4ed6\u623f\u4ea7\uff1f",trigger:{val:"\u662f",show:[{id:"priorPropertyType",q:"\u60a8\u62e5\u6709\u7684\u623f\u4ea7\u7c7b\u578b\u662f\u4ec0\u4e48\uff1f",type:"choice",opts:["\u81ea\u4f4f\u623f","FHA\u7b2c\u4e8c\u5c45\u6240","\u5ea6\u5047\u5c4b","\u6295\u8d44\u623f"]},{id:"titleHeld",q:"\u60a8\u662f\u5982\u4f55\u6301\u6709\u4ea7\u6743\uff1f",type:"choice",opts:["\u5355\u72ec\u6301\u6709","\u4e0e\u914d\u5076\u5171\u540c\u6301\u6709","\u4e0e\u4ed6\u4eba\u5171\u540c\u6301\u6709"]}]}}]}},
+  {id:"occupyProperty",q:"\u60a8\u662f\u5426\u4f1a\u81ea\u4f4f\u8be5\u623f\u4ea7\uff1f",trigger:{val:"\u662f",show:[
+    {id:"priorProperty",q:"\u60a8\u8fc7\u53bb\u4e09\u5e74\u662f\u5426\u6301\u6709\u8fc7\u5176\u4ed6\u623f\u4ea7\uff1f",trigger:{val:"\u662f",show:[
+      {id:"priorPropertyType",q:"\u60a8\u62e5\u6709\u7684\u623f\u4ea7\u7c7b\u578b\u662f\u4ec0\u4e48\uff1f",type:"choice",opts:["\u81ea\u4f4f\u623f","FHA\u7b2c\u4e8c\u5c45\u6240","\u5ea6\u5047\u5c4b","\u6295\u8d44\u623f"]},
+      {id:"titleHeld",q:"\u60a8\u662f\u5982\u4f55\u6301\u6709\u4ea7\u6743\uff1f",type:"choice",opts:["\u5355\u72ec\u6301\u6709","\u4e0e\u914d\u5076\u5171\u540c\u6301\u6709","\u4e0e\u4ed6\u4eba\u5171\u540c\u6301\u6709"]}
+    ]}}
+  ]}},
   {id:"sellerRelationship",q:"\u5982\u679c\u662f\u8d2d\u623f\u4ea4\u6613\uff1a\u60a8\u662f\u5426\u4e0e\u5356\u65b9\u6709\u5bb6\u5ead\u5173\u7cfb\u6216\u4e1a\u52a1\u5173\u8054\uff1f",purchaseOnly:true},
   {id:"borrowedFunds",q:"\u60a8\u662f\u5426\u4e3a\u6b64\u6b21\u4ea4\u6613\u501f\u6b3e\uff08\u5982\u9996\u4ed8\u6216\u8fc7\u6237\u8d39\uff09\uff0c\u4e14\u672a\u5728\u6b64\u7533\u8bf7\u4e2d\u62ab\u9732\uff1f",trigger:{val:"\u662f",show:[{id:"borrowedAmount",q:"\u8fd9\u7b14\u8d44\u91d1\u7684\u91d1\u989d\u662f\u591a\u5c11\uff1f",type:"text",ph:"$ \u91d1\u989d"}]}},
   {id:"otherMortgage",q:"\u60a8\u662f\u5426\u5df2\u7533\u8bf7\u6216\u5c06\u7533\u8bf7\u53e6\u4e00\u5904\u623f\u4ea7\u7684\u62b5\u62bc\u8d37\u6b3e\uff0c\u4e14\u672a\u5728\u6b64\u7533\u8bf7\u4e2d\u62ab\u9732\uff1f"},
@@ -56,176 +59,88 @@ const MAP_ZH_EN=Object.fromEntries(Object.entries(MAP_EN_ZH).map(([k,v])=>[v,k])
 function translateObj(obj,map){const o={};for(const[k,v]of Object.entries(obj))o[k]=map[v]||v;return o;}
 function needsPrevEmployer(durVal){if(!durVal)return false;var p=durVal.split('|');return(parseInt(p[0])||0)<2;}
 
-// ─── MISMO 3.4 XML GENERATOR ───────────────────────────────────────────────
+// ── MISMO 3.4 ─────────────────────────────────────────────────────
 function decYN(store,id){var v=store[id];return v==='Yes'||v==='\u662f'?'Y':v==='No'||v==='\u5426'?'N':'';}
 function xmlEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
 function genMISMO(){
   var a=answers,d=dec,now=new Date().toISOString().split('T')[0];
   var loanAmt=String(a.loanAmount||'').replace(/[^0-9.]/g,'')||'0';
   var purchPrice=String(a.purchasePrice||a.appraisedValue||'').replace(/[^0-9.]/g,'')||'0';
   var isPurch=(a.transaction==='Purchase'||a.transaction==='\u8d2d\u623f');
-  var loanPurpose=isPurch?'Purchase':'Refinance';
-  var propUse=a.occupancy||'PrimaryResidence';
   var propUseMap={'Primary Residence':'PrimaryResidence','Second Home':'SecondHome','Investment Property':'Investor','\u81ea\u4f4f\u623f':'PrimaryResidence','\u5ea6\u5047\u5c4b':'SecondHome','\u6295\u8d44\u623f':'Investor'};
-  propUse=propUseMap[propUse]||'PrimaryResidence';
-  var propType=a.propertyType||'SingleFamily';
+  var propUse=propUseMap[a.occupancy]||'PrimaryResidence';
   var ptMap={'Single Family':'SingleFamily','2-Family':'Duplex','3-Family':'Triplex','4-Family':'Quadraplex','Condo / Townhouse':'Condominium','Condo/Townhouse':'Condominium','PUD':'PlannedUnitDevelopment','Co-op':'Cooperative','\u4e00\u5bb6\u5ead':'SingleFamily','\u4e24\u5bb6\u5ead':'Duplex','\u4e09\u5bb6\u5ead':'Triplex','\u56db\u5bb6\u5ead':'Quadraplex'};
-  propType=ptMap[propType]||'SingleFamily';
+  var propType=ptMap[a.propertyType]||'SingleFamily';
   var empName=xmlEsc(a.employerName||a.businessName||'');
-  var empYrs=0,empMos=0;
-  if(a.duration){var dp=a.duration.split('|');empYrs=parseInt(dp[0])||0;empMos=parseInt(dp[1])||0;}
-  // Parse address
-  var addr=xmlEsc(a.address||'');
-  // Declarations
-  function yn(id){return decYN(d,id);}
   var bkChaps=d.bankruptcyType||'';
   var hasCo=(a.coborrower==='Yes'||a.coborrower==='\u662f');
-  var xml='<?xml version="1.0" encoding="UTF-8"?>\n';
-  xml+='<MESSAGE xmlns="http://www.mismo.org/residential/2009/schemas" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n';
-  xml+='  MISMOVersionIdentifier="3.4">\n';
-  xml+='  <ABOUT_VERSIONS>\n';
-  xml+='    <ABOUT_VERSION><CreatedDatetime>'+now+'T00:00:00</CreatedDatetime><DataVersionIdentifier>3.4</DataVersionIdentifier></ABOUT_VERSION>\n';
-  xml+='  </ABOUT_VERSIONS>\n';
-  xml+='  <DEAL_SETS><DEAL_SET><DEALS><DEAL>\n';
-  // PARTIES
-  xml+='    <PARTIES>\n';
-  // Borrower
-  xml+='      <PARTY SequenceNumber="1"><ROLES><ROLE><BORROWER>\n';
-  xml+='        <BORROWER_DETAIL><BorrowerClassificationType>Primary</BorrowerClassificationType></BORROWER_DETAIL>\n';
-  xml+='        <DECLARATION>\n';
-  xml+='          <DECLARATION_DETAIL>\n';
-  xml+='            <BankruptcyIndicator>'+yn('bankruptcy')+'</BankruptcyIndicator>\n';
-  if(bkChaps.indexOf('Chapter 7')>=0||bkChaps.indexOf('\u7b2c7\u7ae0')>=0)  xml+='            <BankruptcyChapter7Indicator>Y</BankruptcyChapter7Indicator>\n';
-  if(bkChaps.indexOf('Chapter 11')>=0||bkChaps.indexOf('\u7b2c11\u7ae0')>=0) xml+='            <BankruptcyChapter11Indicator>Y</BankruptcyChapter11Indicator>\n';
-  if(bkChaps.indexOf('Chapter 12')>=0||bkChaps.indexOf('\u7b2c12\u7ae0')>=0) xml+='            <BankruptcyChapter12Indicator>Y</BankruptcyChapter12Indicator>\n';
-  if(bkChaps.indexOf('Chapter 13')>=0||bkChaps.indexOf('\u7b2c13\u7ae0')>=0) xml+='            <BankruptcyChapter13Indicator>Y</BankruptcyChapter13Indicator>\n';
-  xml+='            <BorrowedDownPaymentIndicator>'+yn('borrowedFunds')+'</BorrowedDownPaymentIndicator>\n';
-  xml+='            <CoSignerIndicator>'+yn('coSigner')+'</CoSignerIndicator>\n';
-  xml+='            <DeedInLieuConveyedIndicator>'+yn('deedInLieu')+'</DeedInLieuConveyedIndicator>\n';
-  xml+='            <FederalDebtDelinquentIndicator>'+yn('federalDebt')+'</FederalDebtDelinquentIndicator>\n';
-  xml+='            <ForeclosureIndicator>'+yn('foreclosure')+'</ForeclosureIndicator>\n';
-  xml+='            <JudgmentIndicator>'+yn('judgments')+'</JudgmentIndicator>\n';
-  xml+='            <LiabilityLawsuitIndicator>'+yn('lawsuit')+'</LiabilityLawsuitIndicator>\n';
-  xml+='            <LienPriorityIndicator>'+yn('priorityLien')+'</LienPriorityIndicator>\n';
-  xml+='            <OccupyPropertyIndicator>'+yn('occupyProperty')+'</OccupyPropertyIndicator>\n';
-  xml+='            <OtherLoanApplicationIndicator>'+yn('otherMortgage')+'</OtherLoanApplicationIndicator>\n';
-  xml+='            <PartyToLawsuitIndicator>'+yn('lawsuit')+'</PartyToLawsuitIndicator>\n';
-  xml+='            <PreForeclosureSaleCompletedIndicator>'+yn('shortSale')+'</PreForeclosureSaleCompletedIndicator>\n';
-  xml+='            <PresentlyDelinquentIndicator>'+yn('federalDebt')+'</PresentlyDelinquentIndicator>\n';
-  xml+='            <PriorPropertyDeedInLieuConveyedIndicator>'+yn('deedInLieu')+'</PriorPropertyDeedInLieuConveyedIndicator>\n';
-  xml+='            <PriorPropertyForeclosureCompletedIndicator>'+yn('foreclosure')+'</PriorPropertyForeclosureCompletedIndicator>\n';
-  xml+='            <PriorPropertyShortSaleCompletedIndicator>'+yn('shortSale')+'</PriorPropertyShortSaleCompletedIndicator>\n';
-  if(yn('occupyProperty')==='Y'){xml+='            <PriorPropertyUsageType>'+(d.priorPropertyType||'')+'</PriorPropertyUsageType>\n';}
-  xml+='            <PropertyProposedCleanEnergyLienIndicator>'+yn('priorityLien')+'</PropertyProposedCleanEnergyLienIndicator>\n';
-  xml+='            <UndisclosedBorrowedFundsIndicator>'+yn('borrowedFunds')+'</UndisclosedBorrowedFundsIndicator>\n';
-  if(yn('borrowedFunds')==='Y'){xml+='            <UndisclosedBorrowedFundsAmount>'+xmlEsc(d.borrowedAmount||'')+'</UndisclosedBorrowedFundsAmount>\n';}
-  xml+='            <UndisclosedCreditApplicationIndicator>'+yn('newCredit')+'</UndisclosedCreditApplicationIndicator>\n';
-  xml+='            <UndisclosedMortgageApplicationIndicator>'+yn('otherMortgage')+'</UndisclosedMortgageApplicationIndicator>\n';
-  xml+='          </DECLARATION_DETAIL>\n';
-  xml+='        </DECLARATION>\n';
-  // Employment
-  if(empName){
-    xml+='        <EMPLOYERS><EMPLOYER><EMPLOYER_DETAIL>\n';
-    xml+='          <EmployerName>'+empName+'</EmployerName>\n';
-    xml+='          <EmploymentPositionDescription>'+xmlEsc(a.position||a.ownershipShare||'')+'</EmploymentPositionDescription>\n';
-    xml+='          <EmploymentStartDate>'+now+'</EmploymentStartDate>\n';
-    xml+='          <EmploymentStatusType>Current</EmploymentStatusType>\n';
-    var selfEmp=(a.incomeType==='Self-Employed'||a.incomeType==='\u81ea\u96c7');
-    xml+='          <SpecialBorrowerEmployerRelationshipType>'+(selfEmp?'SelfEmployed':'Employed')+'</SpecialBorrowerEmployerRelationshipType>\n';
-    xml+='        </EMPLOYER_DETAIL></EMPLOYER></EMPLOYERS>\n';
-  }
-  xml+='      </BORROWER></ROLE></ROLES>\n';
-  xml+='      <INDIVIDUAL><NAME>\n';
-  xml+='        <FirstName>'+xmlEsc(a.borrowerFirst)+'</FirstName>\n';
-  xml+='        <LastName>'+xmlEsc(a.borrowerLast)+'</LastName>\n';
-  xml+='      </NAME></INDIVIDUAL>\n';
-  xml+='      <CONTACT_POINTS><CONTACT_POINT><CONTACT_POINT_EMAIL><ContactPointEmailValue>'+xmlEsc(a.email)+'</ContactPointEmailValue></CONTACT_POINT_EMAIL></CONTACT_POINT>\n';
-  xml+='      <CONTACT_POINT><CONTACT_POINT_TELEPHONE><ContactPointTelephoneValue>'+xmlEsc(a.phone)+'</ContactPointTelephoneValue></CONTACT_POINT_TELEPHONE></CONTACT_POINT></CONTACT_POINTS>\n';
-  xml+='    </PARTY>\n';
-  // Co-Borrower if present
-  if(hasCo){
-    xml+='    <PARTY SequenceNumber="2"><ROLES><ROLE><BORROWER>\n';
-    xml+='      <BORROWER_DETAIL><BorrowerClassificationType>CoBorrower</BorrowerClassificationType></BORROWER_DETAIL>\n';
-    xml+='    </BORROWER></ROLE></ROLES>\n';
-    xml+='    <INDIVIDUAL><NAME>\n';
-    xml+='      <FirstName>'+xmlEsc(a.coFirst)+'</FirstName>\n';
-    xml+='      <LastName>'+xmlEsc(a.coLast)+'</LastName>\n';
-    xml+='    </NAME></INDIVIDUAL>\n';
-    xml+='    <CONTACT_POINTS><CONTACT_POINT><CONTACT_POINT_EMAIL><ContactPointEmailValue>'+xmlEsc(a.coEmail)+'</ContactPointEmailValue></CONTACT_POINT_EMAIL></CONTACT_POINT></CONTACT_POINTS>\n';
-    xml+='    </PARTY>\n';
-  }
-  // Loan Officer party
-  xml+='    <PARTY SequenceNumber="3"><ROLES><ROLE><LOAN_ORIGINATOR>\n';
-  xml+='      <LOAN_ORIGINATOR_DETAIL><LoanOriginatorNMLSIdentifier>2425956</LoanOriginatorNMLSIdentifier><LoanOriginatorName>Jack Chen</LoanOriginatorName></LOAN_ORIGINATOR_DETAIL>\n';
-  xml+='    </LOAN_ORIGINATOR></ROLE></ROLES></PARTY>\n';
-  xml+='    </PARTIES>\n';
-  // LOAN
-  xml+='    <LOANS><LOAN>\n';
-  xml+='      <LOAN_DETAIL>\n';
-  xml+='        <LoanPurposeType>'+loanPurpose+'</LoanPurposeType>\n';
-  xml+='        <NoteAmount>'+loanAmt+'</NoteAmount>\n';
-  xml+='        <LoanMaturityPeriodCount>360</LoanMaturityPeriodCount>\n';
-  xml+='        <LoanMaturityPeriodType>Month</LoanMaturityPeriodType>\n';
-  xml+='      </LOAN_DETAIL>\n';
-  // Property
-  xml+='      <COLLATERALS><COLLATERAL><SUBJECT_PROPERTY>\n';
-  xml+='        <PROPERTY_DETAIL>\n';
-  xml+='          <PropertyEstimatedValueAmount>'+purchPrice+'</PropertyEstimatedValueAmount>\n';
-  xml+='          <PropertyStructureBuiltYear></PropertyStructureBuiltYear>\n';
-  xml+='          <PropertyUsageType>'+propUse+'</PropertyUsageType>\n';
-  xml+='          <GSEPropertyType>'+propType+'</GSEPropertyType>\n';
-  xml+='        </PROPERTY_DETAIL>\n';
-  xml+='        <ADDRESS>\n';
-  xml+='          <AddressLineText>'+addr+'</AddressLineText>\n';
-  xml+='        </ADDRESS>\n';
-  xml+='      </SUBJECT_PROPERTY></COLLATERAL></COLLATERALS>\n';
-  xml+='    </LOAN></LOANS>\n';
-  xml+='  </DEAL></DEALS></DEAL_SET></DEAL_SETS>\n';
-  xml+='</MESSAGE>\n';
+  function yn(id){return decYN(d,id);}
+  var xml='<?xml version="1.0" encoding="UTF-8"?>\n<MESSAGE xmlns="http://www.mismo.org/residential/2009/schemas" MISMOVersionIdentifier="3.4">\n';
+  xml+='<ABOUT_VERSIONS><ABOUT_VERSION><CreatedDatetime>'+now+'T00:00:00</CreatedDatetime><DataVersionIdentifier>3.4</DataVersionIdentifier></ABOUT_VERSION></ABOUT_VERSIONS>\n';
+  xml+='<DEAL_SETS><DEAL_SET><DEALS><DEAL><PARTIES>\n';
+  xml+='<PARTY SequenceNumber="1"><ROLES><ROLE><BORROWER>\n';
+  xml+='<BORROWER_DETAIL><BorrowerClassificationType>Primary</BorrowerClassificationType></BORROWER_DETAIL>\n';
+  xml+='<DECLARATION><DECLARATION_DETAIL>\n';
+  xml+='<BankruptcyIndicator>'+yn('bankruptcy')+'</BankruptcyIndicator>\n';
+  if(bkChaps.indexOf('Chapter 7')>=0||bkChaps.indexOf('\u7b2c7')>=0)xml+='<BankruptcyChapter7Indicator>Y</BankruptcyChapter7Indicator>\n';
+  if(bkChaps.indexOf('Chapter 11')>=0||bkChaps.indexOf('\u7b2c11')>=0)xml+='<BankruptcyChapter11Indicator>Y</BankruptcyChapter11Indicator>\n';
+  if(bkChaps.indexOf('Chapter 12')>=0||bkChaps.indexOf('\u7b2c12')>=0)xml+='<BankruptcyChapter12Indicator>Y</BankruptcyChapter12Indicator>\n';
+  if(bkChaps.indexOf('Chapter 13')>=0||bkChaps.indexOf('\u7b2c13')>=0)xml+='<BankruptcyChapter13Indicator>Y</BankruptcyChapter13Indicator>\n';
+  xml+='<BorrowedDownPaymentIndicator>'+yn('borrowedFunds')+'</BorrowedDownPaymentIndicator>\n';
+  xml+='<CoSignerIndicator>'+yn('coSigner')+'</CoSignerIndicator>\n';
+  xml+='<DeedInLieuConveyedIndicator>'+yn('deedInLieu')+'</DeedInLieuConveyedIndicator>\n';
+  xml+='<FederalDebtDelinquentIndicator>'+yn('federalDebt')+'</FederalDebtDelinquentIndicator>\n';
+  xml+='<ForeclosureIndicator>'+yn('foreclosure')+'</ForeclosureIndicator>\n';
+  xml+='<JudgmentIndicator>'+yn('judgments')+'</JudgmentIndicator>\n';
+  xml+='<LiabilityLawsuitIndicator>'+yn('lawsuit')+'</LiabilityLawsuitIndicator>\n';
+  xml+='<LienPriorityIndicator>'+yn('priorityLien')+'</LienPriorityIndicator>\n';
+  xml+='<OccupyPropertyIndicator>'+yn('occupyProperty')+'</OccupyPropertyIndicator>\n';
+  xml+='<OtherLoanApplicationIndicator>'+yn('otherMortgage')+'</OtherLoanApplicationIndicator>\n';
+  xml+='<PreForeclosureSaleCompletedIndicator>'+yn('shortSale')+'</PreForeclosureSaleCompletedIndicator>\n';
+  xml+='<PriorPropertyForeclosureCompletedIndicator>'+yn('foreclosure')+'</PriorPropertyForeclosureCompletedIndicator>\n';
+  if(yn('occupyProperty')==='Y')xml+='<PriorPropertyUsageType>'+xmlEsc(d.priorPropertyType||'')+'</PriorPropertyUsageType>\n';
+  xml+='<PropertyProposedCleanEnergyLienIndicator>'+yn('priorityLien')+'</PropertyProposedCleanEnergyLienIndicator>\n';
+  xml+='<UndisclosedBorrowedFundsIndicator>'+yn('borrowedFunds')+'</UndisclosedBorrowedFundsIndicator>\n';
+  if(yn('borrowedFunds')==='Y')xml+='<UndisclosedBorrowedFundsAmount>'+xmlEsc(d.borrowedAmount||'')+'</UndisclosedBorrowedFundsAmount>\n';
+  xml+='<UndisclosedCreditApplicationIndicator>'+yn('newCredit')+'</UndisclosedCreditApplicationIndicator>\n';
+  xml+='<UndisclosedMortgageApplicationIndicator>'+yn('otherMortgage')+'</UndisclosedMortgageApplicationIndicator>\n';
+  xml+='</DECLARATION_DETAIL></DECLARATION>\n';
+  if(empName){xml+='<EMPLOYERS><EMPLOYER><EMPLOYER_DETAIL><EmployerName>'+empName+'</EmployerName><EmploymentPositionDescription>'+xmlEsc(a.position||a.ownershipShare||'')+'</EmploymentPositionDescription><EmploymentStatusType>Current</EmploymentStatusType><SpecialBorrowerEmployerRelationshipType>'+(a.incomeType==='Self-Employed'||a.incomeType==='\u81ea\u96c7'?'SelfEmployed':'Employed')+'</SpecialBorrowerEmployerRelationshipType></EMPLOYER_DETAIL></EMPLOYER></EMPLOYERS>\n';}
+  xml+='</BORROWER></ROLE></ROLES>\n';
+  xml+='<INDIVIDUAL><NAME><FirstName>'+xmlEsc(a.borrowerFirst)+'</FirstName><LastName>'+xmlEsc(a.borrowerLast)+'</LastName></NAME></INDIVIDUAL>\n';
+  xml+='<CONTACT_POINTS><CONTACT_POINT><CONTACT_POINT_EMAIL><ContactPointEmailValue>'+xmlEsc(a.email)+'</ContactPointEmailValue></CONTACT_POINT_EMAIL></CONTACT_POINT><CONTACT_POINT><CONTACT_POINT_TELEPHONE><ContactPointTelephoneValue>'+xmlEsc(a.phone)+'</ContactPointTelephoneValue></CONTACT_POINT_TELEPHONE></CONTACT_POINT></CONTACT_POINTS>\n';
+  xml+='</PARTY>\n';
+  if(hasCo){xml+='<PARTY SequenceNumber="2"><ROLES><ROLE><BORROWER><BORROWER_DETAIL><BorrowerClassificationType>CoBorrower</BorrowerClassificationType></BORROWER_DETAIL></BORROWER></ROLE></ROLES><INDIVIDUAL><NAME><FirstName>'+xmlEsc(a.coFirst)+'</FirstName><LastName>'+xmlEsc(a.coLast)+'</LastName></NAME></INDIVIDUAL><CONTACT_POINTS><CONTACT_POINT><CONTACT_POINT_EMAIL><ContactPointEmailValue>'+xmlEsc(a.coEmail)+'</ContactPointEmailValue></CONTACT_POINT_EMAIL></CONTACT_POINT></CONTACT_POINTS></PARTY>\n';}
+  xml+='<PARTY SequenceNumber="3"><ROLES><ROLE><LOAN_ORIGINATOR><LOAN_ORIGINATOR_DETAIL><LoanOriginatorNMLSIdentifier>2425956</LoanOriginatorNMLSIdentifier><LoanOriginatorName>Jack Chen</LoanOriginatorName></LOAN_ORIGINATOR_DETAIL></LOAN_ORIGINATOR></ROLE></ROLES></PARTY>\n';
+  xml+='</PARTIES>\n';
+  xml+='<LOANS><LOAN><LOAN_DETAIL><LoanPurposeType>'+(isPurch?'Purchase':'Refinance')+'</LoanPurposeType><NoteAmount>'+loanAmt+'</NoteAmount><LoanMaturityPeriodCount>360</LoanMaturityPeriodCount><LoanMaturityPeriodType>Month</LoanMaturityPeriodType></LOAN_DETAIL>\n';
+  xml+='<COLLATERALS><COLLATERAL><SUBJECT_PROPERTY><PROPERTY_DETAIL><PropertyEstimatedValueAmount>'+purchPrice+'</PropertyEstimatedValueAmount><PropertyUsageType>'+propUse+'</PropertyUsageType><GSEPropertyType>'+propType+'</GSEPropertyType></PROPERTY_DETAIL><ADDRESS><AddressLineText>'+xmlEsc(a.address||'')+'</AddressLineText></ADDRESS></SUBJECT_PROPERTY></COLLATERAL></COLLATERALS>\n';
+  xml+='</LOAN></LOANS>\n</DEAL></DEALS></DEAL_SET></DEAL_SETS>\n</MESSAGE>\n';
   return xml;
 }
+function downloadMISMO(){var xml=genMISMO();var name=(answers.borrowerLast||'Borrower')+'_'+(answers.borrowerFirst||'')+'_MISMO34.xml';var blob=new Blob([xml],{type:'application/xml'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);}
 
-function downloadMISMO(){
-  var xml=genMISMO();
-  var name=(answers.borrowerLast||'Borrower')+'_'+(answers.borrowerFirst||'')+'_MISMO34.xml';
-  var blob=new Blob([xml],{type:'application/xml'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');a.href=url;a.download=name;a.click();
-  setTimeout(function(){URL.revokeObjectURL(url);},1000);
-}
-
-// ─── AUTO EMAIL via EmailJS ────────────────────────────────────────────────
+// ── EMAIL ──────────────────────────────────────────────────────────
 function sendEmail(){
   if(emailSent)return;
-  if(EMAILJS_PUBLIC_KEY==='YOUR_PUBLIC_KEY'){console.warn('EmailJS not configured');return;}
+  if(EMAILJS_PUBLIC_KEY==='YOUR_PUBLIC_KEY'){console.warn('EmailJS not configured — add your keys to the top of app.js');return;}
   emailjs.init(EMAILJS_PUBLIC_KEY);
-  var params={
-    to_email: JACK_EMAIL,
-    subject: 'New Loan Application - '+(answers.borrowerFirst||'')+' '+(answers.borrowerLast||''),
-    borrower_name: (answers.borrowerFirst||'')+' '+(answers.borrowerLast||''),
-    borrower_email: answers.email||'',
-    borrower_phone: answers.phone||'',
-    transaction: answers.transaction||'',
-    loan_amount: answers.loanAmount||'',
-    property_address: answers.address||'',
-    summary: genSummary(),
-    mismo_xml: genMISMO(),
-    submitted_at: new Date().toLocaleString()
-  };
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
-    .then(function(){
-      emailSent=true;
-      var el=document.getElementById('email-status');
-      if(el){el.textContent='\u2713 Application emailed to Jack';el.className='status-msg ok';}
-    })
-    .catch(function(err){
-      var el=document.getElementById('email-status');
-      if(el){el.textContent='Email failed \u2014 please use the button below to email Jack manually.';el.className='status-msg err';}
-      console.error('EmailJS error:',err);
-    });
+  emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
+    to_email:JACK_EMAIL,
+    subject:'New Loan Application - '+(answers.borrowerFirst||'')+' '+(answers.borrowerLast||''),
+    borrower_name:(answers.borrowerFirst||'')+' '+(answers.borrowerLast||''),
+    borrower_email:answers.email||'',
+    borrower_phone:answers.phone||'',
+    transaction:answers.transaction||'',
+    loan_amount:answers.loanAmount||'',
+    property_address:answers.address||'',
+    summary:genSummary(),
+    mismo_xml:genMISMO(),
+    submitted_at:new Date().toLocaleString()
+  }).then(function(){emailSent=true;var el=document.getElementById('email-status');if(el){el.textContent='\u2713 Application emailed to Jack';el.className='status-msg ok';}}).catch(function(err){var el=document.getElementById('email-status');if(el){el.textContent='Email failed — use the backup button below.';el.className='status-msg err';}console.error('EmailJS:',err);});
 }
 
+// ── STEPS ────────────────────────────────────────────────────────
 function getSteps(){
   const t=LANG[lang],isPurch=answers.transaction===(lang==='en'?'Purchase':'\u8d2d\u623f'),hasCo=answers.coborrower===t.yes;
   const isW2=answers.incomeType===(lang==='en'?'W2 / Salary':'\u5de5\u8d44\u6536\u5165 (W2)');
@@ -294,41 +209,27 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function calcLTV(){var loan=parseFloat(String(answers.loanAmount||'').replace(/[^0-9.]/g,''));var val=parseFloat(String(answers.purchasePrice||answers.appraisedValue||'').replace(/[^0-9.]/g,''));if(loan&&val&&val>0){answers.ltvCalc=(loan/val*100).toFixed(3);}else{answers.ltvCalc='';}}
 function calcLoanFromLTV(){var ltv=parseFloat(String(answers.ltvCalc||'').replace(/[^0-9.]/g,''));var val=parseFloat(String(answers.purchasePrice||answers.appraisedValue||'').replace(/[^0-9.]/g,''));if(ltv&&val&&val>0){answers.loanAmount=Math.round(val*ltv/100).toString();}}
 
-function renderDecSection(store,storeVar,decList,yesLabel,noLabel,isPurch){
-  var h='';
-  for(var di=0;di<decList.length;di++){
-    var d=decList[di];
-    if(d.purchaseOnly&&!isPurch)continue;
-    var did=d.id;
-    var ysel=(store[did]===yesLabel)?' sel':'';
-    var nsel=(store[did]===noLabel)?' sel':'';
-    var yenc=yesLabel==='\u662f'?'\\u662f':yesLabel;
-    var nenc=noLabel==='\u5426'?'\\u5426':noLabel;
-    h+='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns">';
-    h+='<button class="dec-btn'+ysel+'" onclick="'+storeVar+'[\''+did+'\']='+'\''+ yenc+'\';render()">'+yesLabel+'</button>';
-    h+='<button class="dec-btn'+nsel+'" onclick="'+storeVar+'[\''+did+'\']='+'\''+ nenc+'\';render()">'+noLabel+'</button>';
-    h+='</div></div>';
-    if(d.trigger&&store[did]===d.trigger.val){
-      for(var si=0;si<d.trigger.show.length;si++){
-        var sub=d.trigger.show[si];
-        if(sub.type==='choice'){
-          h+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var osel=(store[sub.id]===opt)?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';var oe=esc(opt);h+='<button class="pill" style="padding:10px;font-size:.82rem'+osel+'" onclick="'+storeVar+'[\''+sub.id+'\']='+'\'' +oe.replace(/'/g,"\\'")+'\';render()">'+opt+'</button>';}
-          h+='</div></div>';
-        } else if(sub.type==='multicheck'){
-          var curVals=(store[sub.id]||'').split(',').filter(Boolean);
-          h+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+' (select all that apply)</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var checked=curVals.indexOf(opt)>=0;var osel=checked?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';var oe=esc(opt).replace(/'/g,"\\'");h+='<button class="pill" style="padding:10px;font-size:.82rem'+osel+'" onclick="(function(){var a=('+storeVar+'[\''+sub.id+'\']||\'\'  ).split(\',\').filter(Boolean);var i=a.indexOf(\''+oe+'\');if(i>=0)a.splice(i,1);else a.push(\''+oe+'\');'+storeVar+'[\''+sub.id+'\']=a.join(\',\');render()})()">'+opt+'</button>';}
-          h+='</div></div>';
-        } else if(sub.type==='text'){
-          h+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:6px">'+sub.q+'</div><input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+(sub.ph||'')+'" value="'+esc(store[sub.id]||'')+'" oninput="'+storeVar+'[\''+sub.id+'\']=this.value"></div>';
-        }
-      }
-    }
-  }
-  return h;
+// ── DECLARATION HELPERS ───────────────────────────────────────
+// Called by inline onclick — unicode-safe, preserves scroll position
+function decSet(sv,id,val){
+  val=val.replace(/\\u([0-9a-fA-F]{4})/g,function(_,h){return String.fromCharCode(parseInt(h,16));});
+  var sa=document.querySelector('.scroll-area');var sp=sa?sa.scrollTop:0;
+  window[sv][id]=val;
+  render();
+  var sa2=document.querySelector('.scroll-area');if(sa2)sa2.scrollTop=sp;
 }
+function decToggle(sv,id,val){
+  val=val.replace(/\\u([0-9a-fA-F]{4})/g,function(_,h){return String.fromCharCode(parseInt(h,16));});
+  var sa=document.querySelector('.scroll-area');var sp=sa?sa.scrollTop:0;
+  var arr=(window[sv][id]||'').split(',').filter(Boolean);
+  var i=arr.indexOf(val);if(i>=0)arr.splice(i,1);else arr.push(val);
+  window[sv][id]=arr.join(',');
+  render();
+  var sa2=document.querySelector('.scroll-area');if(sa2)sa2.scrollTop=sp;
+}
+function decText(sv,id,val){window[sv][id]=val;}
 
+// ── RENDER ──────────────────────────────────────────────────────────
 function render(){
   const app=document.getElementById('app'),t=LANG[lang],steps=getSteps(),total=steps.length,cur=steps[step],isPurch=answers.transaction===(lang==='en'?'Purchase':'\u8d2d\u623f');
   let h='';
@@ -337,29 +238,21 @@ function render(){
 
   if(phase==='review'){document.body.style.justifyContent='flex-start';h+='<h2 style="font-size:1.3rem;font-weight:700;color:#3a2e1e;text-align:center;margin:0 0 4px">'+t.review+'</h2><p style="color:#8a7a60;font-size:.82rem;text-align:center;margin-bottom:20px">'+t.reviewSub+'</p><div class="review-scroll">';var sec="";for(const st of steps){if(st.section&&st.section!==sec){sec=st.section;h+='<div class="review-section"><div class="review-label">'+sec+'</div>';}if(st.type==="decProperty"||st.type==="decFinancial"||st.type==="coDecProperty"||st.type==="coDecFinancial"){var store=(st.type==="coDecProperty"||st.type==="coDecFinancial")?coDec:dec;var isFn=(st.type==="decFinancial"||st.type==="coDecFinancial");var allDr=isFn?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];for(const d of allDr){if(d.purchaseOnly&&!isPurch)continue;if(store[d.id])h+='<div class="review-row"><span class="review-q">'+d.q+'</span><span class="review-a">'+esc(store[d.id])+'</span></div>';if(d.trigger&&store[d.id]===d.trigger.val){for(const sub of d.trigger.show){if(store[sub.id])h+='<div class="review-row"><span class="review-q" style="padding-left:12px">'+sub.q+'</span><span class="review-a">'+esc(store[sub.id])+'</span></div>';}}}}else if(st.type==="multi"){var vals=st.fields.map(function(f){return answers[f.id]||'';}).filter(Boolean).join(' ');if(vals)h+='<div class="review-row"><span class="review-q">'+st.q+'</span><span class="review-a">'+esc(vals)+'</span></div>';}else if(st.type==="loanltv"){if(answers.loanAmount)h+='<div class="review-row"><span class="review-q">'+(lang==='en'?'Loan Amount':'\u8d37\u6b3e\u91d1\u989d')+'</span><span class="review-a">$'+esc(answers.loanAmount)+'</span></div>';if(answers.ltvCalc)h+='<div class="review-row"><span class="review-q">LTV</span><span class="review-a">'+esc(answers.ltvCalc)+'%</span></div>';}else if(st.type!=="attestation"&&answers[st.id]){var v=answers[st.id];if(st.type==="duration"){var p=v.split("|");v=(p[0]||0)+" "+t.years+", "+(p[1]||0)+" "+t.months;}h+='<div class="review-row"><span class="review-q">'+st.q+'</span><span class="review-a">'+esc(v)+'</span></div>';}}h+='</div></div><button class="primary" onclick="phase=\'done\';render()">'+t.submit+'</button><div class="nav-center"><button class="ghost" onclick="phase=\'form\';step='+(total-1)+';render()">'+t.back+'</button></div>';app.innerHTML=h;return;}
 
-  // DONE — auto-send email when this phase first loads
   if(phase==='done'){
     document.body.style.justifyContent='center';
-    // Trigger email once
-    setTimeout(sendEmail, 800);
+    setTimeout(sendEmail,800);
     var summary=encodeURIComponent(genSummary()),subj=encodeURIComponent('New Loan Application - '+(answers.borrowerFirst||'')+' '+(answers.borrowerLast||''));
-    h+='<div style="text-align:center">';
-    h+='<div class="done-check">\u2713</div>';
-    h+='<h2 class="done-title">'+t.submitted+'</h2>';
+    h='<div style="text-align:center"><div class="done-check">\u2713</div><h2 class="done-title">'+t.submitted+'</h2>';
     h+='<p style="color:#6b5c42;font-size:.92rem;line-height:1.5;margin-bottom:6px">'+t.submittedSub+'</p>';
     h+='<p style="color:#8a7a60;font-size:.82rem;line-height:1.5;margin-bottom:16px">'+t.submittedNote+'</p>';
-    h+='<div id="email-status" class="status-msg" style="margin-bottom:12px">'+(emailSent?'\u2713 Application emailed to Jack':'Sending application to Jack...')+'</div>';
+    h+='<div id="email-status" class="status-msg" style="margin-bottom:12px">'+(emailSent?'\u2713 Application emailed to Jack':'Sending to Jack...')+'</div>';
     h+='<div class="done-btns">';
-    // MISMO download — primary action
-    h+='<button class="primary" onclick="downloadMISMO()" style="background:#1a5276;display:flex;align-items:center;justify-content:center;gap:8px">\ud83d\udcbe Download MISMO 3.4 File (Encompass)</button>';
-    h+='<a href="sms:9295235865&body='+summary+'" style="text-decoration:none"><button class="primary" style="display:flex;align-items:center;justify-content:center;gap:8px">'+t.textJack+'</button></a>';
-    h+='<a href="mailto:'+JACK_EMAIL+'?subject='+subj+'&body='+summary+'" style="text-decoration:none"><button class="primary" style="background:#92400e;display:flex;align-items:center;justify-content:center;gap:8px">'+t.emailJack+' (backup)</button></a>';
+    h+='<button class="primary" onclick="downloadMISMO()" style="background:#1a5276">\ud83d\udcbe Download MISMO 3.4 (Encompass)</button>';
+    h+='<a href="sms:9295235865&body='+summary+'" style="text-decoration:none"><button class="primary">'+t.textJack+'</button></a>';
+    h+='<a href="mailto:'+JACK_EMAIL+'?subject='+subj+'&body='+summary+'" style="text-decoration:none"><button class="primary" style="background:#92400e">'+t.emailJack+' (backup)</button></a>';
     h+='<button class="secondary-btn" id="copyBtn" onclick="copySum()">'+t.copyText+'</button>';
-    h+='</div>';
-    h+='<p style="color:#a0926e;font-size:.75rem;margin-top:16px;line-height:1.4">'+(lang==='en'?'Or call Jack: ':'\u6216\u76f4\u63a5\u81f4\u7535 Jack: ')+'<a href="tel:9295235865" style="color:#b45309;font-weight:600;text-decoration:none">929-523-5865</a></p>';
-    h+='</div>';
-    app.innerHTML=h;
-    return;
+    h+='</div><p style="color:#a0926e;font-size:.75rem;margin-top:16px">'+(lang==='en'?'Or call Jack: ':'\u6216\u76f4\u63a5\u81f4\u7535 Jack: ')+'<a href="tel:9295235865" style="color:#b45309;font-weight:600">929-523-5865</a></p></div>';
+    app.innerHTML=h;return;
   }
 
   document.body.style.justifyContent='center';
@@ -373,12 +266,77 @@ function render(){
     var yesLabel=lang==='en'?'Yes':'\u662f';
     var noLabel=lang==='en'?'No':'\u5426';
     var decList=isFin?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];
+
+    // Encode yes/no safely for inline onclick
+    var yv=lang==='en'?'Yes':'\\u662f';
+    var nv=lang==='en'?'No':'\\u5426';
+
+    // Recursive sub-question renderer
+    function renderSubs(subList){
+      var r='';
+      for(var si=0;si<subList.length;si++){
+        var sub=subList[si];
+        if(sub.type==='choice'){
+          r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px">';
+          r+='<div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+'</div>';
+          r+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+          for(var oi=0;oi<sub.opts.length;oi++){
+            var opt=sub.opts[oi];
+            var sel=(store[sub.id]===opt)?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';
+            var oe=esc(opt).replace(/'/g,"\\'");
+            r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" onclick="decSet(\''+storeVar+'\',\''+sub.id+'\',\''+oe+'\')">'+opt+'</button>';
+          }
+          r+='</div>';
+          // Recurse if this sub has its own trigger
+          if(sub.trigger&&store[sub.id]===sub.trigger.val){
+            r+=renderSubs(sub.trigger.show);
+          }
+          r+='</div>';
+        } else if(sub.type==='multicheck'){
+          var curVals=(store[sub.id]||'').split(',').filter(Boolean);
+          r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px">';
+          r+='<div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+' <span style="color:#b45309;font-size:.75rem">(select all that apply)</span></div>';
+          r+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+          for(var oi=0;oi<sub.opts.length;oi++){
+            var opt=sub.opts[oi];
+            var chk=curVals.indexOf(opt)>=0;
+            var sel=chk?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';
+            var oe=esc(opt).replace(/'/g,"\\'");
+            r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" onclick="decToggle(\''+storeVar+'\',\''+sub.id+'\',\''+oe+'\')">'+opt+'</button>';
+          }
+          r+='</div></div>';
+        } else if(sub.type==='text'){
+          r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px">';
+          r+='<div style="font-size:.82rem;color:#4a3f32;margin-bottom:6px">'+sub.q+'</div>';
+          r+='<input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+(sub.ph||'')+'" value="'+esc(store[sub.id]||'')+'" oninput="decText(\''+storeVar+'\',\''+sub.id+'\',this.value)">';
+          r+='</div>';
+        }
+      }
+      return r;
+    }
+
     h+='<button class="lang-btn" onclick="toggleLang()">'+t.lang+'</button>';
     h+='<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span class="sec-label">'+cur.section+'</span><span style="font-size:.72rem;color:#a0926e">'+(step+1)+' '+t.of+' '+total+'</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+((step+1)/total*100)+'%"></div></div></div>';
     h+='<h2 style="font-size:1.15rem;font-weight:700;color:#3a2e1e;margin:16px 0 4px">'+(isCo?t.coDecTitle:t.decTitle)+'</h2>';
     h+='<p style="font-size:.82rem;color:#8a7a60;margin-bottom:16px;line-height:1.4">'+(isCo?t.coDecSub:t.decSub)+'</p>';
     h+='<div class="scroll-area"><div class="dec-section-label">'+(isFin?t.decFinancial:t.decProperty)+'</div>';
-    h+=renderDecSection(store,storeVar,decList,yesLabel,noLabel,isPurch);
+
+    for(var di=0;di<decList.length;di++){
+      var d=decList[di];
+      if(d.purchaseOnly&&!isPurch)continue;
+      var did=d.id;
+      var ysel=(store[did]===yesLabel)?' sel':'';
+      var nsel=(store[did]===noLabel)?' sel':'';
+      h+='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns">';
+      h+='<button class="dec-btn'+ysel+'" onclick="decSet(\''+storeVar+'\',\''+did+'\',\''+yv+'\')">' +yesLabel+'</button>';
+      h+='<button class="dec-btn'+nsel+'" onclick="decSet(\''+storeVar+'\',\''+did+'\',\''+nv+'\')">' +noLabel+'</button>';
+      h+='</div></div>';
+      // Show sub-questions recursively if trigger fires
+      if(d.trigger&&store[did]===d.trigger.val){
+        h+=renderSubs(d.trigger.show);
+      }
+    }
+
     h+='</div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button><div class="nav-center"><button class="ghost" onclick="goBack()">'+t.back+'</button></div>';
     app.innerHTML=h;
     return;
@@ -388,12 +346,12 @@ function render(){
 
   h+='<button class="lang-btn" onclick="toggleLang()">'+t.lang+'</button><div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span class="sec-label">'+(cur.section||'')+'</span><span style="font-size:.72rem;color:#a0926e">'+(step+1)+' '+t.of+' '+total+'</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+((step+1)/total*100)+'%"></div></div></div><div class="q-area"><h2 class="q-title">'+cur.q+'</h2>';
   if(cur.sub)h+='<p class="q-sub">'+cur.sub+'</p>';else h+='<div style="height:12px"></div>';
-  if(cur.type==='choice'){h+='<div class="pills">';for(var opt of cur.opts)h+='<div class="pill'+(answers[cur.id]===opt?' sel':'')+'" onclick="pick(\''+esc(opt)+'\')">' +opt+'</div>';h+='</div>';}
+  if(cur.type==='choice'){h+='<div class="pills">';for(var opt of cur.opts)h+='<div class="pill'+(answers[cur.id]===opt?' sel':'')+'" onclick="pick(\''+esc(opt)+'\')">'+opt+'</div>';h+='</div>';}
   if(cur.type==='text'){var canGo=cur.req?!!answers[cur.id]:true;h+='<input class="text-input" id="qinput" type="text" placeholder="'+esc(cur.ph||'')+'" value="'+esc(answers[cur.id]||'')+'" oninput="answers[\''+cur.id+'\']=this.value;document.getElementById(\'nextbtn\').disabled=this.value===\'\'&&'+cur.req+'" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"><button class="primary" id="nextbtn" style="margin-top:16px" '+(canGo?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';}
   if(cur.type==='loanltv'){calcLTV();h+='<input class="text-input" id="qinput" type="text" placeholder="$ Amount" value="'+esc(answers.loanAmount||'')+'" oninput="answers.loanAmount=this.value;calcLTV();document.getElementById(\'ltvField\').value=answers.ltvCalc||\'\';document.getElementById(\'nextbtn\').disabled=!this.value;">';h+='<div class="ltv-row"><span class="ltv-label">LTV:</span><input class="ltv-input" id="ltvField" type="text" placeholder="0.000%" value="'+esc(answers.ltvCalc||'')+'" oninput="answers.ltvCalc=this.value;calcLoanFromLTV();document.getElementById(\'qinput\').value=answers.loanAmount||\'\';">';h+='<span class="ltv-label">%</span></div>';var canGo=!!answers.loanAmount;h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(canGo?'':'disabled')+' onclick="goNext()">'+t.next+'</button>';}
   if(cur.type==='dropdowns'){var occOpts=lang==='en'?["","Primary Residence","Second Home","Investment Property"]:["","\u81ea\u4f4f\u623f","\u5ea6\u5047\u5c4b","\u6295\u8d44\u623f"];var occL=lang==='en'?["Select occupancy...","Primary Residence","Second Home","Investment Property"]:["\u8bf7\u9009\u62e9...","\u81ea\u4f4f\u623f","\u5ea6\u5047\u5c4b","\u6295\u8d44\u623f"];var ptOpts=lang==='en'?["","Single Family","2-Family","3-Family","4-Family","Condo / Townhouse","PUD","Co-op"]:["","\u4e00\u5bb6\u5ead","\u4e24\u5bb6\u5ead","\u4e09\u5bb6\u5ead","\u56db\u5bb6\u5ead","Condo/Townhouse","PUD","Co-op"];var ptL=lang==='en'?["Select property type...","Single Family","2-Family","3-Family","4-Family","Condo / Townhouse","PUD","Co-op"]:["\u8bf7\u9009\u62e9...","\u4e00\u5bb6\u5ead","\u4e24\u5bb6\u5ead","\u4e09\u5bb6\u5ead","\u56db\u5bb6\u5ead","Condo/Townhouse","PUD","Co-op"];h+='<div style="margin-bottom:14px"><label class="dur-label">'+(lang==='en'?'Occupancy':'\u623f\u5c4b\u7528\u9014')+'</label><select class="dur-select" onchange="answers.occupancy=this.value;checkDropdowns()"><option value="">'+(lang==='en'?'Select...':'\u8bf7\u9009\u62e9...')+'</option>';for(var i=1;i<occOpts.length;i++)h+='<option value="'+esc(occOpts[i])+'"'+(answers.occupancy===occOpts[i]?' selected':'')+'>'+occL[i]+'</option>';h+='</select></div>';h+='<div><label class="dur-label">'+(lang==='en'?'Property Type':'\u623f\u4ea7\u7c7b\u578b')+'</label><select class="dur-select" onchange="answers.propertyType=this.value;checkDropdowns()"><option value="">'+(lang==='en'?'Select...':'\u8bf7\u9009\u62e9...')+'</option>';for(var i=1;i<ptOpts.length;i++)h+='<option value="'+esc(ptOpts[i])+'"'+(answers.propertyType===ptOpts[i]?' selected':'')+'>'+ptL[i]+'</option>';h+='</select></div>';var ddOk=!!answers.occupancy&&!!answers.propertyType;h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(ddOk?'':'disabled')+' onclick="goNext()">'+t.next+'</button>';}
-  if(cur.type==='duration'){var parsed=(answers[cur.id]||'').split('|'),yrs=parsed[0]||'',mos=parsed[1]||'';h+='<div class="dur-wrap"><div style="flex:1"><label class="dur-label">'+t.years+'</label><select class="dur-select" onchange="answers[\''+cur.id+'\']=this.value+\'|\'+(answers[\''+cur.id+'\']||\'\').split(\'|\')[1]||\'\';render()"><option value="">--</option>';for(var i=0;i<=30;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div><div style="flex:1"><label class="dur-label">'+t.months+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']||\'\').split(\'|\');answers[\''+cur.id+'\']=(p[0]||\'\')+\'|\'+this.value;render()"><option value="">--</option>';for(var i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div></div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button>';}
-  if(cur.type==='multi'){var cols=cur.fields.length>2?2:cur.fields.length;h+='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:10px">';for(var f of cur.fields){h+='<div><input class="text-input" id="qinput_'+f.id+'" type="text" placeholder="'+esc(f.ph||'')+'" value="'+esc(answers[f.id]||'')+'" oninput="answers[\''+f.id+'\']=this.value;checkMultiNext()" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"></div>';}h+='</div>';var allFilled=cur.fields.every(function(f){return !f.req||answers[f.id];});h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(allFilled?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';}
+  if(cur.type==='duration'){var parsed=(answers[cur.id]||'').split('|'),yrs=parsed[0]||'',mos=parsed[1]||'';h+='<div class="dur-wrap"><div style="flex:1"><label class="dur-label">'+t.years+'</label><select class="dur-select" onchange="answers[\''+cur.id+'\' ]=this.value+\'|\'+(answers[\''+cur.id+'\']||\'\').split(\'|\')[1]||\'\';render()"><option value="">--</option>';for(var i=0;i<=30;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div><div style="flex:1"><label class="dur-label">'+t.months+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']||\'\').split(\'|\');answers[\''+cur.id+'\']=(p[0]||\'\')+\'|\'+this.value;render()"><option value="">--</option>';for(var i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div></div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button>';}
+  if(cur.type==='multi'){var cols=cur.fields.length>2?2:cur.fields.length;h+='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:10px">';for(var f of cur.fields){h+='<div><input class="text-input" id="qinput_'+f.id+'" type="text" placeholder="'+esc(f.ph||'')+'" value="'+esc(answers[f.id]||'')+'" oninput="answers[\''+f.id+'\' ]=this.value;checkMultiNext()" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"></div>';}h+='</div>';var allFilled=cur.fields.every(function(f){return !f.req||answers[f.id];});h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(allFilled?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';}
   h+='</div><div class="nav-center"><button class="ghost" onclick="goBack()">'+t.back+'</button></div>';app.innerHTML=h;
   if(cur.type==='text'||cur.type==='loanltv'){var inp=document.getElementById('qinput');if(inp)setTimeout(function(){inp.focus();},100);}
   if(cur.type==='multi'){var inp2=document.getElementById('qinput_'+cur.fields[0].id);if(inp2)setTimeout(function(){inp2.focus();},100);}
