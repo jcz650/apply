@@ -38,7 +38,7 @@ const DEC_FINANCIAL={en:[
   {id:"bankruptcy",q:"\u8fc7\u53bb7\u5e74\u662f\u5426\u5ba3\u5e03\u8fc7\u7834\u4ea7\uff1f",trigger:{val:"\u662f",show:[{id:"bankruptcyType",q:"\u8bf7\u9009\u62e9\u7834\u4ea7\u7c7b\u578b\uff1a",type:"choice",opts:["\u7b2c7\u7ae0\u7834\u4ea7","\u7b2c11\u7ae0\u7834\u4ea7","\u7b2c12\u7ae0\u7834\u4ea7","\u7b2c13\u7ae0\u7834\u4ea7"]}]}}
 ]};
 
-const MAP_EN_ZH={"Yes":"\u662f","No":"\u5426","Purchase":"\u8d2d\u623f","Refinance":"\u91cd\u65b0\u8d37\u6b3e","Primary Residence":"\u81ea\u4f4f\u623f","Second Home":"\u5ea6\u5047\u5c4b","Investment Property":"\u6295\u8d44\u623f","Single Family":"\u4e00\u5bb6\u5ead","2-Family":"\u4e24\u5bb6\u5ead","3-Family":"\u4e09\u5bb6\u5ead","4-Family":"\u56db\u5bb6\u5ead","Condo / Townhouse":"Condo/Townhouse","PUD":"PUD","Co-op":"Co-op","W2 / Salary":"\u5de5\u8d44\u6536\u5165 (W2)","Self-Employed":"\u81ea\u96c7","Skip":"\u8df3\u8fc7","Yes, 25% or more":"\u662f\uff0c25%\u4ee5\u4e0a","Less than 25%":"\u4f4e\u4e8e25%","By Yourself":"\u5355\u72ec\u6301\u6709","Jointly with Spouse":"\u4e0e\u914d\u5076\u5171\u540c\u6301\u6709","Jointly with Others":"\u4e0e\u4ed6\u4eba\u5171\u540c\u6301\u6709","Chapter 7":"\u7b2c7\u7ae0\u7834\u4ea7","Chapter 11":"\u7b2c11\u7ae0\u7834\u4ea7","Chapter 12":"\u7b2c12\u7ae0\u7834\u4ea7","Chapter 13":"\u7b2c13\u7ae0\u7834\u4ea7"};
+const MAP_EN_ZH={"Yes":"\u662f","No":"\u5426","Purchase":"\u8d2d\u623f","Refinance":"\u91cd\u65b0\u8d37\u6b3e","Primary Residence":"\u81ea\u4f4f\u623f","Second Home":"\u5ea6\u5047\u5c4b","Investment Property":"\u6295\u8d44\u623f","Single Family":"\u4e00\u5bb6\u5ead","2-Family":"\u4e24\u5bb6\u5ead","3-Family":"\u4e09\u5bb6\u5ead","4-Family":"\u56db\u5bb6\u5ead","Condo / Townhouse":"Condo/Townhouse","PUD":"PUD","Co-op":"Co-op","W2 / Salary":"\u5de5\u8d44\u6536\u5165 (W2)","Self-Employed":"\u81ea\u96c7","Other (Skip)":"\u5176\u4ed6(\u8df3\u8fc7)","Yes, 25% or more":"\u662f\uff0c25%\u4ee5\u4e0a","Less than 25%":"\u4f4e\u4e8e25%","By Yourself":"\u5355\u72ec\u6301\u6709","Jointly with Spouse":"\u4e0e\u914d\u5076\u5171\u540c\u6301\u6709","Jointly with Others":"\u4e0e\u4ed6\u4eba\u5171\u540c\u6301\u6709","Chapter 7":"\u7b2c7\u7ae0\u7834\u4ea7","Chapter 11":"\u7b2c11\u7ae0\u7834\u4ea7","Chapter 12":"\u7b2c12\u7ae0\u7834\u4ea7","Chapter 13":"\u7b2c13\u7ae0\u7834\u4ea7"};
 const MAP_ZH_EN=Object.fromEntries(Object.entries(MAP_EN_ZH).map(([k,v])=>[v,k]));
 function translateObj(obj,map){const o={};for(const[k,v]of Object.entries(obj))o[k]=map[v]||v;return o;}
 
@@ -53,7 +53,7 @@ function getSteps(){
   const t=LANG[lang],isPurch=answers.transaction===(lang==='en'?'Purchase':'\u8d2d\u623f'),hasCo=answers.coborrower===t.yes;
   const isW2=answers.incomeType===(lang==='en'?'W2 / Salary':'\u5de5\u8d44\u6536\u5165 (W2)');
   const isSE=answers.incomeType===(lang==='en'?'Self-Employed':'\u81ea\u96c7');
-  const skip=answers.incomeType===(lang==='en'?'Skip':'\u8df3\u8fc7');
+  const skip=answers.incomeType===(lang==='en'?'Other (Skip)':'\u5176\u4ed6(\u8df3\u8fc7)');
   let s=[];
   if(lang==='en'){
     s.push({id:"borrowerInfo",section:"About You",q:"What's your name and contact info?",type:"multi",fields:[{id:"borrowerFirst",ph:"First name",req:true},{id:"borrowerLast",ph:"Last name",req:true},{id:"email",ph:"Email address",req:true},{id:"phone",ph:"Phone number",req:true}],req:true});
@@ -67,12 +67,11 @@ function getSteps(){
     // Loan amount with auto LTV
     s.push({id:"loanAmount",q:"Desired loan amount?",type:"loanltv",req:true});
     // Employment = "income type" question
-    s.push({id:"incomeType",section:"Income",q:"What's your income type?",type:"choice",opts:["W2 / Salary","Self-Employed","Skip"],req:true});
+    s.push({id:"incomeType",section:"Income",q:"What's your income type?",type:"choice",opts:["W2 / Salary","Self-Employed","Other (Skip)"],req:true});
     if(isW2){
       s.push({id:"employerName",q:"Employer name?",type:"text",ph:"Company name",req:true});
       s.push({id:"position",q:"Your position / title?",type:"text",ph:"e.g. Marketing Manager",req:true});
       s.push({id:"duration",q:"How long have you worked there?",type:"duration",req:true});
-      s.push({id:"employerPhone",q:"Employer / HR phone number?",type:"text",ph:"(000) 000-0000",req:false});
       // If < 2 years, ask previous employer
       if(needsPrevEmployer(answers.duration)){
         s.push({id:"prevEmployerName",q:"Previous employer name?",type:"text",ph:"Previous company",req:true});
@@ -91,7 +90,7 @@ function getSteps(){
       }
     }
     if(hasCo&&!skip){
-      s.push({id:"coIncomeType",section:"Co-Borrower Income",q:"Co-borrower's income type?",type:"choice",opts:["W2 / Salary","Self-Employed","Skip"],req:true});
+      s.push({id:"coIncomeType",section:"Co-Borrower Income",q:"Co-borrower's income type?",type:"choice",opts:["W2 / Salary","Self-Employed","Other (Skip)"],req:true});
       var coW2=answers.coIncomeType==="W2 / Salary",coSE=answers.coIncomeType==="Self-Employed";
       if(coW2){s.push({id:"coEmployerName",q:"Co-borrower's employer?",type:"text",ph:"Company name",req:true});s.push({id:"coPosition",q:"Co-borrower's position?",type:"text",ph:"Position",req:true});s.push({id:"coDuration",q:"How long?",type:"duration",req:true});if(needsPrevEmployer(answers.coDuration)){s.push({id:"coPrevEmployer",q:"Co-borrower's previous employer?",type:"text",ph:"Previous company",req:true});s.push({id:"coPrevPosition",q:"Previous position?",type:"text",ph:"Position",req:true});s.push({id:"coPrevDuration",q:"How long?",type:"duration",req:true});}}
       if(coSE){s.push({id:"coBusinessName",q:"Business name?",type:"text",ph:"Business name",req:true});s.push({id:"coOwnership",q:"Own 25% or more?",type:"choice",opts:["Yes, 25% or more","Less than 25%"],req:true});s.push({id:"coDuration",q:"How long?",type:"duration",req:true});}
@@ -111,12 +110,11 @@ s.push({id:"decFinancial",section:"Declarations",q:"",type:"decFinancial",req:fa
     if(isPurch)s.push({id:"purchasePrice",q:"\u8d2d\u4e70\u4ef7\u683c\uff1f",type:"text",ph:"$ \u91d1\u989d",req:true});
     else if(answers.transaction)s.push({id:"appraisedValue",q:"\u623f\u4ea7\u9884\u4f30\u4ef7\u503c\uff1f",type:"text",ph:"$ \u91d1\u989d",req:true});
     s.push({id:"loanAmount",q:"\u671f\u671b\u8d37\u6b3e\u91d1\u989d\uff1f",type:"loanltv",req:true});
-    s.push({id:"incomeType",section:"\u6536\u5165\u4fe1\u606f",q:"\u60a8\u7684\u6536\u5165\u7c7b\u578b\uff1f",type:"choice",opts:["\u5de5\u8d44\u6536\u5165 (W2)","\u81ea\u96c7","\u8df3\u8fc7"],req:true});
+    s.push({id:"incomeType",section:"\u6536\u5165\u4fe1\u606f",q:"\u60a8\u7684\u6536\u5165\u7c7b\u578b\uff1f",type:"choice",opts:["\u5de5\u8d44\u6536\u5165 (W2)","\u81ea\u96c7","\u5176\u4ed6(\u8df3\u8fc7)"],req:true});
     if(isW2){
       s.push({id:"employerName",q:"\u96c7\u4e3b\u540d\u79f0\uff1f",type:"text",ph:"\u516c\u53f8\u540d\u79f0",req:true});
       s.push({id:"position",q:"\u60a8\u7684\u804c\u4f4d\uff1f",type:"text",ph:"\u4f8b\u5982\uff1a\u5e02\u573a\u7ecf\u7406",req:true});
       s.push({id:"duration",q:"\u5728\u8be5\u516c\u53f8\u5de5\u4f5c\u591a\u957f\u65f6\u95f4\uff1f",type:"duration",req:true});
-      s.push({id:"employerPhone",q:"\u96c7\u4e3b/HR\u8054\u7cfb\u7535\u8bdd\uff1f",type:"text",ph:"(000) 000-0000",req:false});
       if(needsPrevEmployer(answers.duration)){
         s.push({id:"prevEmployerName",q:"\u524d\u96c7\u4e3b\u540d\u79f0\uff1f",type:"text",ph:"\u524d\u516c\u53f8\u540d\u79f0",req:true});
         s.push({id:"prevPosition",q:"\u524d\u804c\u4f4d\uff1f",type:"text",ph:"\u804c\u4f4d",req:true});
@@ -134,7 +132,7 @@ s.push({id:"decFinancial",section:"Declarations",q:"",type:"decFinancial",req:fa
       }
     }
     if(hasCo&&!skip){
-      s.push({id:"coIncomeType",section:"\u5171\u540c\u501f\u6b3e\u4eba\u6536\u5165",q:"\u5171\u540c\u501f\u6b3e\u4eba\u7684\u6536\u5165\u7c7b\u578b\uff1f",type:"choice",opts:["\u5de5\u8d44\u6536\u5165 (W2)","\u81ea\u96c7","\u8df3\u8fc7"],req:true});
+      s.push({id:"coIncomeType",section:"\u5171\u540c\u501f\u6b3e\u4eba\u6536\u5165",q:"\u5171\u540c\u501f\u6b3e\u4eba\u7684\u6536\u5165\u7c7b\u578b\uff1f",type:"choice",opts:["\u5de5\u8d44\u6536\u5165 (W2)","\u81ea\u96c7","\u5176\u4ed6(\u8df3\u8fc7)"],req:true});
       var coW2=answers.coIncomeType==="\u5de5\u8d44\u6536\u5165 (W2)",coSE=answers.coIncomeType==="\u81ea\u96c7";
       if(coW2){s.push({id:"coEmployerName",q:"\u5171\u540c\u501f\u6b3e\u4eba\u7684\u96c7\u4e3b\uff1f",type:"text",ph:"\u516c\u53f8\u540d\u79f0",req:true});s.push({id:"coPosition",q:"\u5171\u540c\u501f\u6b3e\u4eba\u7684\u804c\u4f4d\uff1f",type:"text",ph:"\u804c\u4f4d",req:true});s.push({id:"coDuration",q:"\u5de5\u4f5c\u591a\u957f\u65f6\u95f4\uff1f",type:"duration",req:true});if(needsPrevEmployer(answers.coDuration)){s.push({id:"coPrevEmployer",q:"\u5171\u540c\u501f\u6b3e\u4eba\u7684\u524d\u96c7\u4e3b\uff1f",type:"text",ph:"\u524d\u516c\u53f8\u540d\u79f0",req:true});s.push({id:"coPrevPosition",q:"\u524d\u804c\u4f4d\uff1f",type:"text",ph:"\u804c\u4f4d",req:true});s.push({id:"coPrevDuration",q:"\u5de5\u4f5c\u591a\u957f\u65f6\u95f4\uff1f",type:"duration",req:true});}}
       if(coSE){s.push({id:"coBusinessName",q:"\u4f01\u4e1a\u540d\u79f0\uff1f",type:"text",ph:"\u4f01\u4e1a\u540d\u79f0",req:true});s.push({id:"coOwnership",q:"\u662f\u5426\u62e5\u670925%\u4ee5\u4e0a\u80a1\u4efd\uff1f",type:"choice",opts:["\u662f\uff0c25%\u4ee5\u4e0a","\u4f4e\u4e8e25%"],req:true});s.push({id:"coDuration",q:"\u81ea\u96c7\u591a\u957f\u65f6\u95f4\uff1f",type:"duration",req:true});}
@@ -203,13 +201,13 @@ function render(){
     var storeVar=isCo?'coDec':'dec';
     function renderDecQ(d){
       if(d.purchaseOnly&&!isPurch)return'';
-      var r='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns"><div class="dec-btn'+(store[d.id]===yesLabel?' sel':'')+ '" onclick="decClick(\''+storeVar+'\',\''+d.id+'\',\''+yesLabel+'\')">' +yesLabel+'</div><div class="dec-btn'+(store[d.id]===noLabel?' sel':'')+ '" onclick="decClick(\''+storeVar+'\',\''+d.id+'\',\''+noLabel+'\')">' +noLabel+'</div></div></div>';
+      var r='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns"><div class="dec-btn'+(store[d.id]===yesLabel?' sel':'')+'" onclick="decClick(\''+storeVar+'\',\''+d.id+'\',\''+yesLabel+'\')">'+yesLabel+'</div><div class="dec-btn'+(store[d.id]===noLabel?' sel':'')+'" onclick="decClick(\''+storeVar+'\',\''+d.id+'\',\''+noLabel+'\')">'+noLabel+'</div></div></div>';
       // Conditional sub-questions
       if(d.trigger&&store[d.id]===d.trigger.val){
         for(var sub of d.trigger.show){
           if(sub.type==='choice'){
             r+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-            for(var opt of sub.opts)r+='<div class="pill" style="padding:10px;font-size:.82rem'+(store[sub.id]===opt?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'')+ '" onclick="decClick(\''+storeVar+'\',\''+sub.id+'\',\''+esc(opt)+'\')">' +opt+'</div>';
+            for(var opt of sub.opts)r+='<div class="pill" style="padding:10px;font-size:.82rem'+(store[sub.id]===opt?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'')+'" onclick="decClick(\''+storeVar+'\',\''+sub.id+'\',\''+esc(opt)+'\')">'+opt+'</div>';
             r+='</div></div>';
           }else if(sub.type==='text'){
             r+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:6px">'+sub.q+'</div><input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+(sub.ph||'')+'" value="'+esc(store[sub.id]||'')+'" oninput="'+storeVar+'[\''+sub.id+'\']=this.value"></div>';
@@ -237,7 +235,7 @@ function render(){
   // LOAN AMOUNT + LTV auto-calc
   if(cur.type==='loanltv'){
     calcLTV();
-    h+='<input class="text-input" id="qinput" type="text" placeholder="$ Amount" value="'+esc(answers.loanAmount||'')+'" oninput="answers.loanAmount=this.value;calcLTV();document.getElementById(\'ltvField\').value=answers.ltvCalc||\'\';">';
+    h+='<input class="text-input" id="qinput" type="text" placeholder="$ Amount" value="'+esc(answers.loanAmount||'')+'" oninput="answers.loanAmount=this.value;calcLTV();document.getElementById(\'ltvField\').value=answers.ltvCalc||\'\';document.getElementById(\'nextbtn\').disabled=!this.value;">';
     h+='<div class="ltv-row"><span class="ltv-label">LTV:</span><input class="ltv-input" id="ltvField" type="text" placeholder="0.000%" value="'+esc(answers.ltvCalc||'')+'" oninput="answers.ltvCalc=this.value;calcLoanFromLTV();document.getElementById(\'qinput\').value=answers.loanAmount||\'\';">';
     h+='<span class="ltv-label">%</span></div>';
     var canGo=!!answers.loanAmount;
@@ -259,7 +257,7 @@ h+='</select></div>';
 var ddOk=!!answers.occupancy&&!!answers.propertyType;
 h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(ddOk?'':'disabled')+' onclick="goNext()">'+t.next+'</button>';
 }
-if(cur.type==='duration'){var parsed=(answers[cur.id]||'').split('|'),yrs=parsed[0]||'',mos=parsed[1]||'';h+='<div class="dur-wrap"><div style="flex:1"><label class="dur-label">'+t.years+'</label><select class="dur-select" onchange="answers[\''+cur.id+'\']=this.value+\'|\'+(answers[\''+cur.id+'\']||\'\').split(\'|\')[1]||\'\';render()"><option value="">--</option>';for(var i=0;i<=50;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div><div style="flex:1"><label class="dur-label">'+t.months+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']||\'\').split(\'|\');answers[\''+cur.id+'\']=(p[0]||\'\')+\'|\'+this.value;render()"><option value="">--</option>';for(var i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div></div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button>';}
+if(cur.type==='duration'){var parsed=(answers[cur.id]||'').split('|'),yrs=parsed[0]||'',mos=parsed[1]||'';h+='<div class="dur-wrap"><div style="flex:1"><label class="dur-label">'+t.years+'</label><select class="dur-select" onchange="answers[\''+cur.id+'\']=this.value+\'|\'+(answers[\''+cur.id+'\']||\'\').split(\'|\')[1]||\'\';render()"><option value="">--</option>';for(var i=0;i<=30;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div><div style="flex:1"><label class="dur-label">'+t.months+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']||\'\').split(\'|\');answers[\''+cur.id+'\']=(p[0]||\'\')+\'|\'+this.value;render()"><option value="">--</option>';for(var i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div></div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button>';}
 
   if(cur.type==='multi'){var cols=cur.fields.length>2?2:cur.fields.length;h+='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:10px">';for(var f of cur.fields){h+='<div><input class="text-input" id="qinput_'+f.id+'" type="text" placeholder="'+esc(f.ph||'')+'" value="'+esc(answers[f.id]||'')+'" oninput="answers[\''+f.id+'\']=this.value;checkMultiNext()" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"></div>';}h+='</div>';var allFilled=cur.fields.every(function(f){return !f.req||answers[f.id];});h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(allFilled?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';}
 
