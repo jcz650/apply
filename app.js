@@ -152,12 +152,8 @@ function genSummary(){
   let s="=== LOAN APPLICATION SUMMARY ===\n",sec="";
   for(const st of steps){
     if(st.section&&st.section!==sec){sec=st.section;s+="\n--- "+sec+" ---\n";}
-    if(st.type==="declarations"){s+="\n[Borrower Declarations]\n";renderDecSummary(DEC_PROPERTY[lang],dec,isPurch,s);renderDecSummary(DEC_FINANCIAL[lang],dec,isPurch,s);for(const d of[...DEC_PROPERTY[lang],...DEC_FINANCIAL[lang]]){if(d.purchaseOnly&&!isPurch)continue;s+=d.q+" "+(dec[d.id]||"N/A")+"\n";if(d.trigger&&dec[d.id]===d.trigger.val){for(const sub of d.trigger.show){if(dec[sub.id])s+="  "+sub.q+" "+dec[sub.id]+"\n";}}}}
-    else if(st.type==="coDecProperty"||st.type==="coDecFinancial"){var cFn2=(st.type==="coDecFinancial");if(!cFn2)s+="
-[Co-Borrower Declarations]
-";var cDL2=cFn2?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];for(var ci2=0;ci2<cDL2.length;ci2++){var cd2=cDL2[ci2];if(cd2.purchaseOnly&&!ip)continue;s+=cd2.q+" "+(coDec[cd2.id]||"N/A")+"
-";if(cd2.trigger&&coDec[cd2.id]===cd2.trigger.val){for(var ck2=0;ck2<cd2.trigger.show.length;ck2++){var csb2=cd2.trigger.show[ck2];if(coDec[csb2.id])s+="  "+csb2.q+" "+coDec[csb2.id]+"
-";}}}}
+    if(st.type==="decProperty"||st.type==="decFinancial"){var isFn=(st.type==="decFinancial");if(!isFn)s+="\n[Borrower Declarations]\n";var allD=isFn?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];for(var j=0;j<allD.length;j++){var d=allD[j];if(d.purchaseOnly&&!isPurch)continue;s+=d.q+" "+(dec[d.id]||"N/A")+"\n";if(d.trigger&&dec[d.id]===d.trigger.val){for(var k=0;k<d.trigger.show.length;k++){var sub=d.trigger.show[k];if(dec[sub.id])s+="  "+sub.q+" "+dec[sub.id]+"\n";}}}}
+    else if(st.type==="coDecProperty"||st.type==="coDecFinancial"){var cFn=(st.type==="coDecFinancial");if(!cFn)s+="\n[Co-Borrower Declarations]\n";var cDL=cFn?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];for(var ci=0;ci<cDL.length;ci++){var cd=cDL[ci];if(cd.purchaseOnly&&!isPurch)continue;s+=cd.q+" "+(coDec[cd.id]||"N/A")+"\n";if(cd.trigger&&coDec[cd.id]===cd.trigger.val){for(var ck=0;ck<cd.trigger.show.length;ck++){var csb=cd.trigger.show[ck];if(coDec[csb.id])s+="  "+csb.q+" "+coDec[csb.id]+"\n";}}}}
     else if(st.type==="multi"){const vals=st.fields.map(f=>answers[f.id]||'').filter(Boolean).join(' ');if(vals)s+=st.q+" "+vals+"\n";}
     else if(st.type==="loanltv"){if(answers.loanAmount)s+="Loan Amount: "+answers.loanAmount+"\n";if(answers.ltvCalc)s+="LTV: "+answers.ltvCalc+"%\n";}
     else if(st.type!=="attestation"&&answers[st.id]){if(st.type==="duration"){const p=answers[st.id].split("|");s+=st.q+" "+(p[0]||0)+" yrs, "+(p[1]||0)+" mos\n";}else s+=st.q+" "+answers[st.id]+"\n";}
@@ -207,13 +203,13 @@ function render(){
     var storeVar=isCo?'coDec':'dec';
     function renderDecQ(d){
       if(d.purchaseOnly&&!isPurch)return'';
-      var r='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns"><div class="dec-btn'+(store[d.id]===yesLabel?' sel':'')+'" onclick="'+storeVar+'[\''+d.id+'\']=\''+yesLabel+'\';render()">'+yesLabel+'</div><div class="dec-btn'+(store[d.id]===noLabel?' sel':'')+'" onclick="'+storeVar+'[\''+d.id+'\']=\''+noLabel+'\';render()">'+noLabel+'</div></div></div>';
+      var r='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns"><div class="dec-btn'+(store[d.id]===yesLabel?' sel':'')+ '" onclick="decClick(\''+storeVar+'\',\''+d.id+'\',\''+yesLabel+'\')">' +yesLabel+'</div><div class="dec-btn'+(store[d.id]===noLabel?' sel':'')+ '" onclick="decClick(\''+storeVar+'\',\''+d.id+'\',\''+noLabel+'\')">' +noLabel+'</div></div></div>';
       // Conditional sub-questions
       if(d.trigger&&store[d.id]===d.trigger.val){
         for(var sub of d.trigger.show){
           if(sub.type==='choice'){
             r+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-            for(var opt of sub.opts)r+='<div class="pill" style="padding:10px;font-size:.82rem'+(store[sub.id]===opt?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'')+'" onclick="'+storeVar+'[\''+sub.id+'\']=\''+esc(opt)+'\';render()">'+opt+'</div>';
+            for(var opt of sub.opts)r+='<div class="pill" style="padding:10px;font-size:.82rem'+(store[sub.id]===opt?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'')+ '" onclick="decClick(\''+storeVar+'\',\''+sub.id+'\',\''+esc(opt)+'\')">' +opt+'</div>';
             r+='</div></div>';
           }else if(sub.type==='text'){
             r+='<div style="padding:8px 0 8px 16px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:6px">'+sub.q+'</div><input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+(sub.ph||'')+'" value="'+esc(store[sub.id]||'')+'" oninput="'+storeVar+'[\''+sub.id+'\']=this.value"></div>';
@@ -222,9 +218,7 @@ function render(){
       }
       return r;
     }
-    for(var d of DEC_PROPERTY[lang])h+=renderDecQ(d);
-    h+='<div class="dec-section-label mt">'+t.decFinancial+'</div>';
-    for(var d of DEC_FINANCIAL[lang])h+=renderDecQ(d);
+    var decList=isFin?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];for(var d of decList)h+=renderDecQ(d);
     h+='</div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button><div class="nav-center"><button class="ghost" onclick="goBack()">'+t.back+'</button></div>';
     app.innerHTML=h;return;
   }
