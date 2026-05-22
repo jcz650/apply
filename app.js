@@ -77,19 +77,19 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function calcLTV(){var loan=parseFloat(String(answers.loanAmount||'').replace(/[^0-9.]/g,''));var val=parseFloat(String(answers.purchasePrice||answers.appraisedValue||'').replace(/[^0-9.]/g,''));if(loan&&val&&val>0){answers.ltvCalc=(loan/val*100).toFixed(3);}else{answers.ltvCalc='';}}
 function calcLoanFromLTV(){var ltv=parseFloat(String(answers.ltvCalc||'').replace(/[^0-9.]/g,''));var val=parseFloat(String(answers.purchasePrice||answers.appraisedValue||'').replace(/[^0-9.]/g,''));if(ltv&&val&&val>0){answers.loanAmount=Math.round(val*ltv/100).toString();}}
 
-// handleDec: stores the raw value from data-val directly into dec/coDec
-// data-val contains the EXACT same string used for comparison in render()
+// data-val stores raw value (not HTML-escaped) so getAttribute returns the actual
+// character that matches stored values and trigger comparisons exactly.
 function handleDec(btn){
   var sv=btn.getAttribute('data-sv');
   var id=btn.getAttribute('data-did');
   var val=btn.getAttribute('data-val');
-  if(sv&&id&&val!==null){window[sv][id]=val;render();}
+  if(sv&&id&&(val!==null)){window[sv][id]=val;render();}
 }
 function handleDecToggle(btn){
   var sv=btn.getAttribute('data-sv');
   var id=btn.getAttribute('data-did');
   var val=btn.getAttribute('data-val');
-  if(!sv||!id||val===null)return;
+  if(!sv||!id||(val===null))return;
   var arr=(window[sv][id]||'').split(',').filter(Boolean);
   var i=arr.indexOf(val);if(i>=0)arr.splice(i,1);else arr.push(val);
   window[sv][id]=arr.join(',');render();
@@ -107,7 +107,6 @@ function render(){
     var isFin=(cur.type==='decFinancial'||cur.type==='coDecFinancial');
     var store=isCo?coDec:dec;
     var sv=isCo?'coDec':'dec';
-    // yL/nL are the actual characters — stored in data-val AND used for .sel comparison
     var yL=lang==='en'?'Yes':'\u662f';
     var nL=lang==='en'?'No':'\u5426';
     var decList=isFin?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];
@@ -117,14 +116,12 @@ function render(){
         var sub=subList[si];var sid=sub.id;
         if(sub.type==='choice'){
           r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var osel=(store[sid]===opt)?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+osel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+opt+'" onclick="handleDec(this)">'+opt+'</button>';}
-          r+='</div>';
-          if(sub.trigger&&store[sid]===sub.trigger.val){r+=buildSubs(sub.trigger.show);}
-          r+='</div>';
+          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var sel=(store[sid]===opt)?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+opt+'" onclick="handleDec(this)">'+esc(opt)+'</button>';}
+          r+='</div>';if(sub.trigger&&store[sid]===sub.trigger.val){r+=buildSubs(sub.trigger.show);}r+='</div>';
         }else if(sub.type==='multicheck'){
           var cv=(store[sid]||'').split(',').filter(Boolean);
           r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+' <span style="color:#b45309;font-size:.75rem">(select all)</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var osel=cv.indexOf(opt)>=0?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+osel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+opt+'" onclick="handleDecToggle(this)">'+opt+'</button>';}
+          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var sel=cv.indexOf(opt)>=0?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+opt+'" onclick="handleDecToggle(this)">'+esc(opt)+'</button>';}
           r+='</div></div>';
         }else if(sub.type==='text'){
           r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:6px">'+sub.q+'</div><input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+esc(sub.ph||'')+'" value="'+esc(store[sid]||'')+'" oninput="(function(el){window['+JSON.stringify(sv)+']['+JSON.stringify(sid)+']=el.value;})(this)"></div>';
@@ -133,16 +130,12 @@ function render(){
       return r;
     }
     h+='<button class="lang-btn" onclick="toggleLang()">'+t.lang+'</button><div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span class="sec-label">'+cur.section+'</span><span style="font-size:.72rem;color:#a0926e">'+(step+1)+' '+t.of+' '+total+'</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+((step+1)/total*100)+'%"></div></div></div>';
-    h+='<h2 style="font-size:1.15rem;font-weight:700;color:#3a2e1e;margin:16px 0 4px">'+(isCo?t.coDecTitle:t.decTitle)+'</h2>';
-    h+='<p style="font-size:.82rem;color:#8a7a60;margin-bottom:16px;line-height:1.4">'+(isCo?t.coDecSub:t.decSub)+'</p>';
+    h+='<h2 style="font-size:1.15rem;font-weight:700;color:#3a2e1e;margin:16px 0 4px">'+(isCo?t.coDecTitle:t.decTitle)+'</h2><p style="font-size:.82rem;color:#8a7a60;margin-bottom:16px;line-height:1.4">'+(isCo?t.coDecSub:t.decSub)+'</p>';
     h+='<div class="scroll-area"><div class="dec-section-label">'+(isFin?t.decFinancial:t.decProperty)+'</div>';
     for(var di=0;di<decList.length;di++){
-      var d=decList[di];
-      if(d.purchaseOnly&&!isPurch)continue;
+      var d=decList[di];if(d.purchaseOnly&&!isPurch)continue;
       var did=d.id;
-      var ysel=(store[did]===yL)?' sel':'';
-      var nsel=(store[did]===nL)?' sel':'';
-      // data-val holds EXACT same value that render() compares against yL/nL
+      var ysel=(store[did]===yL)?' sel':'';var nsel=(store[did]===nL)?' sel':'';
       h+='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns">';
       h+='<button class="dec-btn'+ysel+'" data-sv="'+sv+'" data-did="'+did+'" data-val="'+yL+'" onclick="handleDec(this)">'+yL+'</button>';
       h+='<button class="dec-btn'+nsel+'" data-sv="'+sv+'" data-did="'+did+'" data-val="'+nL+'" onclick="handleDec(this)">'+nL+'</button>';
@@ -159,7 +152,7 @@ function render(){
   if(cur.type==='text'){var canGo=cur.req?!!answers[cur.id]:true;h+='<input class="text-input" id="qinput" type="text" placeholder="'+esc(cur.ph||'')+'" value="'+esc(answers[cur.id]||'')+'" oninput="answers[\''+cur.id+'\']=this.value;document.getElementById(\'nextbtn\').disabled=this.value===\'\'&&'+cur.req+'" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"><button class="primary" id="nextbtn" style="margin-top:16px" '+(canGo?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';}
   if(cur.type==='loanltv'){calcLTV();h+='<input class="text-input" id="qinput" type="text" placeholder="$ Amount" value="'+esc(answers.loanAmount||'')+'" oninput="answers.loanAmount=this.value;calcLTV();document.getElementById(\'ltvField\').value=answers.ltvCalc||\'\';document.getElementById(\'nextbtn\').disabled=!this.value;">';h+='<div class="ltv-row"><span class="ltv-label">LTV:</span><input class="ltv-input" id="ltvField" type="text" placeholder="0.000%" value="'+esc(answers.ltvCalc||'')+'" oninput="answers.ltvCalc=this.value;calcLoanFromLTV();document.getElementById(\'qinput\').value=answers.loanAmount||\'\';">';h+='<span class="ltv-label">%</span></div>';var canGo=!!answers.loanAmount;h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(canGo?'':'disabled')+' onclick="goNext()">'+t.next+'</button>';}
   if(cur.type==='dropdowns'){var occOpts=lang==='en'?["","Primary Residence","Second Home","Investment Property"]:["","\u81ea\u4f4f\u623f","\u5ea6\u5047\u5c4b","\u6295\u8d44\u623f"];var occL=lang==='en'?["Select occupancy...","Primary Residence","Second Home","Investment Property"]:["\u8bf7\u9009\u62e9...","\u81ea\u4f4f\u623f","\u5ea6\u5047\u5c4b","\u6295\u8d44\u623f"];var ptOpts=lang==='en'?["","Single Family","2-Family","3-Family","4-Family","Condo / Townhouse","PUD","Co-op"]:["","\u4e00\u5bb6\u5ead","\u4e24\u5bb6\u5ead","\u4e09\u5bb6\u5ead","\u56db\u5bb6\u5ead","Condo/Townhouse","PUD","Co-op"];var ptL=lang==='en'?["Select property type...","Single Family","2-Family","3-Family","4-Family","Condo / Townhouse","PUD","Co-op"]:["\u8bf7\u9009\u62e9...","\u4e00\u5bb6\u5ead","\u4e24\u5bb6\u5ead","\u4e09\u5bb6\u5ead","\u56db\u5bb6\u5ead","Condo/Townhouse","PUD","Co-op"];h+='<div style="margin-bottom:14px"><label class="dur-label">'+(lang==='en'?'Occupancy':'\u623f\u5c4b\u7528\u9014')+'</label><select class="dur-select" onchange="answers.occupancy=this.value;checkDropdowns()"><option value="">'+(lang==='en'?'Select...':'\u8bf7\u9009\u62e9...')+'</option>';for(var i=1;i<occOpts.length;i++)h+='<option value="'+esc(occOpts[i])+'"'+(answers.occupancy===occOpts[i]?' selected':'')+'>'+occL[i]+'</option>';h+='</select></div>';h+='<div><label class="dur-label">'+(lang==='en'?'Property Type':'\u623f\u4ea7\u7c7b\u578b')+'</label><select class="dur-select" onchange="answers.propertyType=this.value;checkDropdowns()"><option value="">'+(lang==='en'?'Select...':'\u8bf7\u9009\u62e9...')+'</option>';for(var i=1;i<ptOpts.length;i++)h+='<option value="'+esc(ptOpts[i])+'"'+(answers.propertyType===ptOpts[i]?' selected':'')+'>'+ptL[i]+'</option>';h+='</select></div>';var ddOk=!!answers.occupancy&&!!answers.propertyType;h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(ddOk?'':'disabled')+' onclick="goNext()">'+t.next+'</button>';}
-  if(cur.type==='duration'){var parsed=(answers[cur.id]||'').split('|'),yrs=parsed[0]||'',mos=parsed[1]||'';h+='<div class="dur-wrap"><div style="flex:1"><label class="dur-label">'+t.years+'</label><select class="dur-select" onchange="answers[\''+cur.id+'\' ]=this.value+\'|\'+(answers[\''+cur.id+'\']||\'\').split(\'|\')[1]||\'\';render()"><option value="">--</option>';for(var i=0;i<=30;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div><div style="flex:1"><label class="dur-label">'+t.months+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']||\'\').split(\'|\');answers[\''+cur.id+'\']=(p[0]||\'\')+\'|\'+this.value;render()"><option value="">--</option>';for(var i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div></div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button>';}
+  if(cur.type==='duration'){var parsed=(answers[cur.id]||'').split('|'),yrs=parsed[0]||'',mos=parsed[1]||'';h+='<div class="dur-wrap"><div style="flex:1"><label class="dur-label">'+t.years+'</label><select class="dur-select" onchange="answers[\''+cur.id+'\']=this.value+\'|\'+(answers[\''+cur.id+'\']||\'\').split(\'|\')[1]||\'\';render()"><option value="">--</option>';for(var i=0;i<=30;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div><div style="flex:1"><label class="dur-label">'+t.months+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']||\'\').split(\'|\');answers[\''+cur.id+'\']=(p[0]||\'\')+\'|\'+this.value;render()"><option value="">--</option>';for(var i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div></div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button>';}
   if(cur.type==='multi'){var cols=cur.fields.length>2?2:cur.fields.length;h+='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:10px">';for(var f of cur.fields){h+='<div><input class="text-input" id="qinput_'+f.id+'" type="text" placeholder="'+esc(f.ph||'')+'" value="'+esc(answers[f.id]||'')+'" oninput="answers[\''+f.id+'\' ]=this.value;checkMultiNext()" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"></div>';}h+='</div>';var allFilled=cur.fields.every(function(f){return !f.req||answers[f.id];});h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(allFilled?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';}
   h+='</div><div class="nav-center"><button class="ghost" onclick="goBack()">'+t.back+'</button></div>';app.innerHTML=h;
   if(cur.type==='text'||cur.type==='loanltv'){var inp=document.getElementById('qinput');if(inp)setTimeout(function(){inp.focus();},100);}
