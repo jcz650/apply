@@ -71,18 +71,19 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function calcLTV(){var loan=parseFloat(String(answers.loanAmount||'').replace(/[^0-9.]/g,''));var val=parseFloat(String(answers.purchasePrice||answers.appraisedValue||'').replace(/[^0-9.]/g,''));if(loan&&val&&val>0){answers.ltvCalc=(loan/val*100).toFixed(3);}else{answers.ltvCalc='';}}
 function calcLoanFromLTV(){var ltv=parseFloat(String(answers.ltvCalc||'').replace(/[^0-9.]/g,''));var val=parseFloat(String(answers.purchasePrice||answers.appraisedValue||'').replace(/[^0-9.]/g,''));if(ltv&&val&&val>0){answers.loanAmount=Math.round(val*ltv/100).toString();}}
 
-// Handles Yes/No and sub-question clicks via data-attributes - no quoting issues
+// handleDec reads raw data-val (never HTML-escaped) so the stored value
+// matches exactly what trigger comparisons expect (e.g. "Yes", "\u662f", "No", "\u5426")
 function handleDec(btn){
   var sv=btn.getAttribute('data-sv');
   var id=btn.getAttribute('data-did');
   var val=btn.getAttribute('data-val');
-  if(sv&&id&&val){window[sv][id]=val;render();}
+  if(sv&&id&&(val!==null)){window[sv][id]=val;render();}
 }
 function handleDecToggle(btn){
   var sv=btn.getAttribute('data-sv');
   var id=btn.getAttribute('data-did');
   var val=btn.getAttribute('data-val');
-  if(!sv||!id||!val)return;
+  if(!sv||!id||(val===null))return;
   var arr=(window[sv][id]||'').split(',').filter(Boolean);
   var i=arr.indexOf(val);if(i>=0)arr.splice(i,1);else arr.push(val);
   window[sv][id]=arr.join(',');render();
@@ -103,7 +104,6 @@ function render(){
     var yL=lang==='en'?'Yes':'\u662f';
     var nL=lang==='en'?'No':'\u5426';
     var decList=isFin?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];
-    // Build sub-questions recursively using data-attributes (no quoting issues)
     function buildSubs(subList){
       var r='';
       for(var si=0;si<subList.length;si++){
@@ -111,14 +111,15 @@ function render(){
         var sid=sub.id;
         if(sub.type==='choice'){
           r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var sel=(store[sid]===opt)?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+esc(opt)+'" onclick="handleDec(this)">'+esc(opt)+'</button>';}
+          // KEY FIX: use raw opt as data-val (not esc(opt)) so handleDec stores the real string
+          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var sel=(store[sid]===opt)?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+opt+'" onclick="handleDec(this)">'+esc(opt)+'</button>';}
           r+='</div>';
           if(sub.trigger&&store[sid]===sub.trigger.val){r+=buildSubs(sub.trigger.show);}
           r+='</div>';
         }else if(sub.type==='multicheck'){
           var cv=(store[sid]||'').split(',').filter(Boolean);
           r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+' <span style="color:#b45309;font-size:.75rem">(select all)</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var sel=cv.indexOf(opt)>=0?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+esc(opt)+'" onclick="handleDecToggle(this)">'+esc(opt)+'</button>';}
+          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var sel=cv.indexOf(opt)>=0?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+opt+'" onclick="handleDecToggle(this)">'+esc(opt)+'</button>';}
           r+='</div></div>';
         }else if(sub.type==='text'){
           r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:6px">'+sub.q+'</div><input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+esc(sub.ph||'')+'" value="'+esc(store[sid]||'')+'" oninput="(function(el){window['+JSON.stringify(sv)+']['+JSON.stringify(sid)+']=el.value;})(this)"></div>';
@@ -136,10 +137,10 @@ function render(){
       var did=d.id;
       var ysel=(store[did]===yL)?' sel':'';
       var nsel=(store[did]===nL)?' sel':'';
-      // Use data-attributes so no JS string quoting needed in onclick at all
       h+='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns">';
-      h+='<button class="dec-btn'+ysel+'" data-sv="'+sv+'" data-did="'+did+'" data-val="'+esc(yL)+'" onclick="handleDec(this)">'+yL+'</button>';
-      h+='<button class="dec-btn'+nsel+'" data-sv="'+sv+'" data-did="'+did+'" data-val="'+esc(nL)+'" onclick="handleDec(this)">'+nL+'</button>';
+      // KEY FIX: data-val uses raw yL/nL (not esc()) so getAttribute returns the real char
+      h+='<button class="dec-btn'+ysel+'" data-sv="'+sv+'" data-did="'+did+'" data-val="'+yL+'" onclick="handleDec(this)">'+yL+'</button>';
+      h+='<button class="dec-btn'+nsel+'" data-sv="'+sv+'" data-did="'+did+'" data-val="'+nL+'" onclick="handleDec(this)">'+nL+'</button>';
       h+='</div></div>';
       if(d.trigger&&store[did]===d.trigger.val){h+=buildSubs(d.trigger.show);}
     }
