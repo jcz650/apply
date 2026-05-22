@@ -3,7 +3,7 @@ var EMAILJS_PUBLIC_KEY  = 'P0b76QpSqy7Hq_rMR';
 var EMAILJS_SERVICE_ID  = 'service_9gmygbi';
 var EMAILJS_TEMPLATE_ID = 'template_0q403z9';
 var JACK_EMAIL = 'jack.chen@gmccloan.com';
-var APP_VERSION = 'v2026.05.22i';
+var APP_VERSION = 'v2026.05.22j';
 
 try { console.log('[app] loaded ' + APP_VERSION); } catch(e){}
 
@@ -180,6 +180,39 @@ if(hasCo)xml+='<PARTY SequenceNumber="2"><ROLES><ROLE><BORROWER><BORROWER_DETAIL
 xml+='<PARTY SequenceNumber="3"><ROLES><ROLE><LOAN_ORIGINATOR><LOAN_ORIGINATOR_DETAIL><LoanOriginatorNMLSIdentifier>2425956</LoanOriginatorNMLSIdentifier><LoanOriginatorName>Jack Chen</LoanOriginatorName></LOAN_ORIGINATOR_DETAIL></LOAN_ORIGINATOR></ROLE></ROLES></PARTY>\n</PARTIES>\n<LOANS><LOAN><LOAN_DETAIL><LoanPurposeType>'+(isPurch?'Purchase':'Refinance')+'</LoanPurposeType><NoteAmount>'+loanAmt+'</NoteAmount><LoanMaturityPeriodCount>360</LoanMaturityPeriodCount><LoanMaturityPeriodType>Month</LoanMaturityPeriodType></LOAN_DETAIL><COLLATERALS><COLLATERAL><SUBJECT_PROPERTY><PROPERTY_DETAIL><PropertyEstimatedValueAmount>'+purchPrice+'</PropertyEstimatedValueAmount><PropertyUsageType>'+propUse+'</PropertyUsageType><GSEPropertyType>'+propType+'</GSEPropertyType></PROPERTY_DETAIL><ADDRESS><AddressLineText>'+xmlEsc(a.address||'')+'</AddressLineText></ADDRESS></SUBJECT_PROPERTY></COLLATERAL></COLLATERALS></LOAN></LOANS>\n</DEAL></DEALS></DEAL_SET></DEAL_SETS>\n</MESSAGE>\n';
 return xml;}
 
+function genSetupMailto(){
+  var to='setupcupertino@gmccloan.com';
+  var cc='kmok@gmccloan.com';
+  var name=((answers.borrowerFirst||'')+' '+(answers.borrowerLast||'')).trim()||'Borrower';
+  var subject='Setup Request # '+name;
+  var transaction=answers.transaction||'';
+  var ltv=answers.ltvCalc?(answers.ltvCalc+'%'):'';
+  // Body uses \r\n for max email-client compatibility
+  var body=[
+    'Hi Team, the file is ready for set up:',
+    '',
+    'Loan #: ',
+    'Transaction: '+transaction,
+    'LTV: '+ltv,
+    'Rate: ',
+    'Term: ',
+    'PPP: ',
+    'Point Charged: ',
+    '',
+    'Contacts',
+    'Bank Attorney: ',
+    'Title/escrow: ',
+    'Insurance: ',
+    'HOA: ',
+    '',
+    'Let me know what else is needed. Thanks!'
+  ].join('\r\n');
+  return 'mailto:'+encodeURIComponent(to)+
+    '?cc='+encodeURIComponent(cc)+
+    '&subject='+encodeURIComponent(subject)+
+    '&body='+encodeURIComponent(body);
+}
+
 function sendEmail(){
   if(emailSent)return;
   if(EMAILJS_PUBLIC_KEY==='YOUR_PUBLIC_KEY'){
@@ -204,6 +237,7 @@ function sendEmail(){
     summary:genSummary(),
     summary_html:genSummaryHtml(),
     mismo_xml:genMISMO(),
+    setup_email_link:genSetupMailto(),
     submitted_at:new Date().toLocaleString()
   }).then(function(){
     emailSent=true;
