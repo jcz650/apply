@@ -3,7 +3,7 @@ var EMAILJS_PUBLIC_KEY  = 'P0b76QpSqy7Hq_rMR';
 var EMAILJS_SERVICE_ID  = 'service_9gmygbi';
 var EMAILJS_TEMPLATE_ID = 'template_0q403z9';
 var JACK_EMAIL = 'jack.chen@gmccloan.com';
-var APP_VERSION = 'v2026.05.22f';
+var APP_VERSION = 'v2026.05.22g';
 
 try { console.log('[app] loaded ' + APP_VERSION); } catch(e){}
 
@@ -402,6 +402,13 @@ function render(){
           r+='</div></div>';
         }else if(sub.type==='text'){
           r+='<div style="'+indent+'"><div class="sub-label">'+sub.q+'</div><input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+esc(sub.ph||'')+'" value="'+esc(store[sid]||'')+'" data-sv="'+sv+'" data-did="'+sid+'" oninput="window.handleDecText(this)"></div>';
+        }else{
+          // Default: Yes/No nested question (no explicit type set)
+          var ysel2=(store[sid]===yL)?' sel':'';var nsel2=(store[sid]===nL)?' sel':'';
+          r+='<div style="'+indent+'"><div class="dec-row" style="border-bottom:none;padding:0"><div class="dec-q" style="font-size:.88rem">'+sub.q+'</div><div class="dec-btns">';
+          r+='<button type="button" class="dec-btn'+ysel2+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+yL+'" onclick="window.handleDec(this)">'+yL+'</button>';
+          r+='<button type="button" class="dec-btn'+nsel2+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+nL+'" onclick="window.handleDec(this)">'+nL+'</button>';
+          r+='</div></div></div>';
         }
         if(sub.trigger&&triggerMatch(store[sid],sub.trigger.val)){r+=buildSubs(sub.trigger.show);}
       }
