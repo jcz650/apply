@@ -123,21 +123,14 @@ function downloadMISMO(){var xml=genMISMO();var name=(answers.borrowerLast||'Bor
 // ── EMAIL ──────────────────────────────────────────────────────────
 function sendEmail(){
   if(emailSent)return;
-  if(EMAILJS_PUBLIC_KEY==='YOUR_PUBLIC_KEY'){console.warn('EmailJS not configured — add your keys to the top of app.js');return;}
+  if(EMAILJS_PUBLIC_KEY==='YOUR_PUBLIC_KEY'){console.warn('EmailJS not configured');return;}
   emailjs.init(EMAILJS_PUBLIC_KEY);
   emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
-    to_email:JACK_EMAIL,
-    subject:'New Loan Application - '+(answers.borrowerFirst||'')+' '+(answers.borrowerLast||''),
-    borrower_name:(answers.borrowerFirst||'')+' '+(answers.borrowerLast||''),
-    borrower_email:answers.email||'',
-    borrower_phone:answers.phone||'',
-    transaction:answers.transaction||'',
-    loan_amount:answers.loanAmount||'',
-    property_address:answers.address||'',
-    summary:genSummary(),
-    mismo_xml:genMISMO(),
-    submitted_at:new Date().toLocaleString()
-  }).then(function(){emailSent=true;var el=document.getElementById('email-status');if(el){el.textContent='\u2713 Application emailed to Jack';el.className='status-msg ok';}}).catch(function(err){var el=document.getElementById('email-status');if(el){el.textContent='Email failed — use the backup button below.';el.className='status-msg err';}console.error('EmailJS:',err);});
+    to_email:JACK_EMAIL,subject:'New Loan Application - '+(answers.borrowerFirst||'')+' '+(answers.borrowerLast||''),
+    borrower_name:(answers.borrowerFirst||'')+' '+(answers.borrowerLast||''),borrower_email:answers.email||'',borrower_phone:answers.phone||'',
+    transaction:answers.transaction||'',loan_amount:answers.loanAmount||'',property_address:answers.address||'',
+    summary:genSummary(),mismo_xml:genMISMO(),submitted_at:new Date().toLocaleString()
+  }).then(function(){emailSent=true;var el=document.getElementById('email-status');if(el){el.textContent='\u2713 Emailed to Jack';el.className='status-msg ok';}}).catch(function(err){var el=document.getElementById('email-status');if(el){el.textContent='Email failed — use backup button.';el.className='status-msg err';}});
 }
 
 // ── STEPS ────────────────────────────────────────────────────────
@@ -210,22 +203,19 @@ function calcLTV(){var loan=parseFloat(String(answers.loanAmount||'').replace(/[
 function calcLoanFromLTV(){var ltv=parseFloat(String(answers.ltvCalc||'').replace(/[^0-9.]/g,''));var val=parseFloat(String(answers.purchasePrice||answers.appraisedValue||'').replace(/[^0-9.]/g,''));if(ltv&&val&&val>0){answers.loanAmount=Math.round(val*ltv/100).toString();}}
 
 // ── DECLARATION HELPERS ───────────────────────────────────────
-// Called by inline onclick — unicode-safe, preserves scroll position
+// Called by inline onclick. Unicode-safe. Uses requestAnimationFrame to restore
+// scroll AFTER paint so it never interferes with the click itself.
 function decSet(sv,id,val){
   val=val.replace(/\\u([0-9a-fA-F]{4})/g,function(_,h){return String.fromCharCode(parseInt(h,16));});
-  var sa=document.querySelector('.scroll-area');var sp=sa?sa.scrollTop:0;
   window[sv][id]=val;
-  render();
-  var sa2=document.querySelector('.scroll-area');if(sa2)sa2.scrollTop=sp;
+  var _sy=window.scrollY;render();requestAnimationFrame(function(){window.scrollTo(0,_sy);});
 }
 function decToggle(sv,id,val){
   val=val.replace(/\\u([0-9a-fA-F]{4})/g,function(_,h){return String.fromCharCode(parseInt(h,16));});
-  var sa=document.querySelector('.scroll-area');var sp=sa?sa.scrollTop:0;
   var arr=(window[sv][id]||'').split(',').filter(Boolean);
   var i=arr.indexOf(val);if(i>=0)arr.splice(i,1);else arr.push(val);
   window[sv][id]=arr.join(',');
-  render();
-  var sa2=document.querySelector('.scroll-area');if(sa2)sa2.scrollTop=sp;
+  var _sy=window.scrollY;render();requestAnimationFrame(function(){window.scrollTo(0,_sy);});
 }
 function decText(sv,id,val){window[sv][id]=val;}
 
@@ -245,7 +235,7 @@ function render(){
     h='<div style="text-align:center"><div class="done-check">\u2713</div><h2 class="done-title">'+t.submitted+'</h2>';
     h+='<p style="color:#6b5c42;font-size:.92rem;line-height:1.5;margin-bottom:6px">'+t.submittedSub+'</p>';
     h+='<p style="color:#8a7a60;font-size:.82rem;line-height:1.5;margin-bottom:16px">'+t.submittedNote+'</p>';
-    h+='<div id="email-status" class="status-msg" style="margin-bottom:12px">'+(emailSent?'\u2713 Application emailed to Jack':'Sending to Jack...')+'</div>';
+    h+='<div id="email-status" class="status-msg" style="margin-bottom:12px">'+(emailSent?'\u2713 Emailed to Jack':'Sending to Jack...')+'</div>';
     h+='<div class="done-btns">';
     h+='<button class="primary" onclick="downloadMISMO()" style="background:#1a5276">\ud83d\udcbe Download MISMO 3.4 (Encompass)</button>';
     h+='<a href="sms:9295235865&body='+summary+'" style="text-decoration:none"><button class="primary">'+t.textJack+'</button></a>';
@@ -266,12 +256,9 @@ function render(){
     var yesLabel=lang==='en'?'Yes':'\u662f';
     var noLabel=lang==='en'?'No':'\u5426';
     var decList=isFin?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];
-
-    // Encode yes/no safely for inline onclick
     var yv=lang==='en'?'Yes':'\\u662f';
     var nv=lang==='en'?'No':'\\u5426';
 
-    // Recursive sub-question renderer
     function renderSubs(subList){
       var r='';
       for(var si=0;si<subList.length;si++){
@@ -284,13 +271,10 @@ function render(){
             var opt=sub.opts[oi];
             var sel=(store[sub.id]===opt)?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';
             var oe=esc(opt).replace(/'/g,"\\'");
-            r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" onclick="decSet(\''+storeVar+'\',\''+sub.id+'\',\''+oe+'\')">'+opt+'</button>';
+            r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" onclick="decSet(\''+storeVar+'\',\''+sub.id+'\',\''+oe+'\')">' +opt+'</button>';
           }
           r+='</div>';
-          // Recurse if this sub has its own trigger
-          if(sub.trigger&&store[sub.id]===sub.trigger.val){
-            r+=renderSubs(sub.trigger.show);
-          }
+          if(sub.trigger&&store[sub.id]===sub.trigger.val){r+=renderSubs(sub.trigger.show);}
           r+='</div>';
         } else if(sub.type==='multicheck'){
           var curVals=(store[sub.id]||'').split(',').filter(Boolean);
@@ -298,11 +282,10 @@ function render(){
           r+='<div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+' <span style="color:#b45309;font-size:.75rem">(select all that apply)</span></div>';
           r+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
           for(var oi=0;oi<sub.opts.length;oi++){
-            var opt=sub.opts[oi];
-            var chk=curVals.indexOf(opt)>=0;
+            var opt=sub.opts[oi];var chk=curVals.indexOf(opt)>=0;
             var sel=chk?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';
             var oe=esc(opt).replace(/'/g,"\\'");
-            r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" onclick="decToggle(\''+storeVar+'\',\''+sub.id+'\',\''+oe+'\')">'+opt+'</button>';
+            r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" onclick="decToggle(\''+storeVar+'\',\''+sub.id+'\',\''+oe+'\')">' +opt+'</button>';
           }
           r+='</div></div>';
         } else if(sub.type==='text'){
@@ -331,10 +314,7 @@ function render(){
       h+='<button class="dec-btn'+ysel+'" onclick="decSet(\''+storeVar+'\',\''+did+'\',\''+yv+'\')">' +yesLabel+'</button>';
       h+='<button class="dec-btn'+nsel+'" onclick="decSet(\''+storeVar+'\',\''+did+'\',\''+nv+'\')">' +noLabel+'</button>';
       h+='</div></div>';
-      // Show sub-questions recursively if trigger fires
-      if(d.trigger&&store[did]===d.trigger.val){
-        h+=renderSubs(d.trigger.show);
-      }
+      if(d.trigger&&store[did]===d.trigger.val){h+=renderSubs(d.trigger.show);}
     }
 
     h+='</div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button><div class="nav-center"><button class="ghost" onclick="goBack()">'+t.back+'</button></div>';
@@ -350,8 +330,8 @@ function render(){
   if(cur.type==='text'){var canGo=cur.req?!!answers[cur.id]:true;h+='<input class="text-input" id="qinput" type="text" placeholder="'+esc(cur.ph||'')+'" value="'+esc(answers[cur.id]||'')+'" oninput="answers[\''+cur.id+'\']=this.value;document.getElementById(\'nextbtn\').disabled=this.value===\'\'&&'+cur.req+'" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"><button class="primary" id="nextbtn" style="margin-top:16px" '+(canGo?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';}
   if(cur.type==='loanltv'){calcLTV();h+='<input class="text-input" id="qinput" type="text" placeholder="$ Amount" value="'+esc(answers.loanAmount||'')+'" oninput="answers.loanAmount=this.value;calcLTV();document.getElementById(\'ltvField\').value=answers.ltvCalc||\'\';document.getElementById(\'nextbtn\').disabled=!this.value;">';h+='<div class="ltv-row"><span class="ltv-label">LTV:</span><input class="ltv-input" id="ltvField" type="text" placeholder="0.000%" value="'+esc(answers.ltvCalc||'')+'" oninput="answers.ltvCalc=this.value;calcLoanFromLTV();document.getElementById(\'qinput\').value=answers.loanAmount||\'\';">';h+='<span class="ltv-label">%</span></div>';var canGo=!!answers.loanAmount;h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(canGo?'':'disabled')+' onclick="goNext()">'+t.next+'</button>';}
   if(cur.type==='dropdowns'){var occOpts=lang==='en'?["","Primary Residence","Second Home","Investment Property"]:["","\u81ea\u4f4f\u623f","\u5ea6\u5047\u5c4b","\u6295\u8d44\u623f"];var occL=lang==='en'?["Select occupancy...","Primary Residence","Second Home","Investment Property"]:["\u8bf7\u9009\u62e9...","\u81ea\u4f4f\u623f","\u5ea6\u5047\u5c4b","\u6295\u8d44\u623f"];var ptOpts=lang==='en'?["","Single Family","2-Family","3-Family","4-Family","Condo / Townhouse","PUD","Co-op"]:["","\u4e00\u5bb6\u5ead","\u4e24\u5bb6\u5ead","\u4e09\u5bb6\u5ead","\u56db\u5bb6\u5ead","Condo/Townhouse","PUD","Co-op"];var ptL=lang==='en'?["Select property type...","Single Family","2-Family","3-Family","4-Family","Condo / Townhouse","PUD","Co-op"]:["\u8bf7\u9009\u62e9...","\u4e00\u5bb6\u5ead","\u4e24\u5bb6\u5ead","\u4e09\u5bb6\u5ead","\u56db\u5bb6\u5ead","Condo/Townhouse","PUD","Co-op"];h+='<div style="margin-bottom:14px"><label class="dur-label">'+(lang==='en'?'Occupancy':'\u623f\u5c4b\u7528\u9014')+'</label><select class="dur-select" onchange="answers.occupancy=this.value;checkDropdowns()"><option value="">'+(lang==='en'?'Select...':'\u8bf7\u9009\u62e9...')+'</option>';for(var i=1;i<occOpts.length;i++)h+='<option value="'+esc(occOpts[i])+'"'+(answers.occupancy===occOpts[i]?' selected':'')+'>'+occL[i]+'</option>';h+='</select></div>';h+='<div><label class="dur-label">'+(lang==='en'?'Property Type':'\u623f\u4ea7\u7c7b\u578b')+'</label><select class="dur-select" onchange="answers.propertyType=this.value;checkDropdowns()"><option value="">'+(lang==='en'?'Select...':'\u8bf7\u9009\u62e9...')+'</option>';for(var i=1;i<ptOpts.length;i++)h+='<option value="'+esc(ptOpts[i])+'"'+(answers.propertyType===ptOpts[i]?' selected':'')+'>'+ptL[i]+'</option>';h+='</select></div>';var ddOk=!!answers.occupancy&&!!answers.propertyType;h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(ddOk?'':'disabled')+' onclick="goNext()">'+t.next+'</button>';}
-  if(cur.type==='duration'){var parsed=(answers[cur.id]||'').split('|'),yrs=parsed[0]||'',mos=parsed[1]||'';h+='<div class="dur-wrap"><div style="flex:1"><label class="dur-label">'+t.years+'</label><select class="dur-select" onchange="answers[\''+cur.id+'\' ]=this.value+\'|\'+(answers[\''+cur.id+'\']||\'\').split(\'|\')[1]||\'\';render()"><option value="">--</option>';for(var i=0;i<=30;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div><div style="flex:1"><label class="dur-label">'+t.months+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']||\'\').split(\'|\');answers[\''+cur.id+'\']=(p[0]||\'\')+\'|\'+this.value;render()"><option value="">--</option>';for(var i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div></div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button>';}
-  if(cur.type==='multi'){var cols=cur.fields.length>2?2:cur.fields.length;h+='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:10px">';for(var f of cur.fields){h+='<div><input class="text-input" id="qinput_'+f.id+'" type="text" placeholder="'+esc(f.ph||'')+'" value="'+esc(answers[f.id]||'')+'" oninput="answers[\''+f.id+'\' ]=this.value;checkMultiNext()" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"></div>';}h+='</div>';var allFilled=cur.fields.every(function(f){return !f.req||answers[f.id];});h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(allFilled?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';}
+  if(cur.type==='duration'){var parsed=(answers[cur.id]||'').split('|'),yrs=parsed[0]||'',mos=parsed[1]||'';h+='<div class="dur-wrap"><div style="flex:1"><label class="dur-label">'+t.years+'</label><select class="dur-select" onchange="answers[\''+cur.id+'\']=this.value+\'|\'+(answers[\''+cur.id+'\']||\'\').split(\'|\')[1]||\'\';render()"><option value="">--</option>';for(var i=0;i<=30;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div><div style="flex:1"><label class="dur-label">'+t.months+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']||\'\').split(\'|\');answers[\''+cur.id+'\']=(p[0]||\'\')+\'|\'+this.value;render()"><option value="">--</option>';for(var i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div></div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button>';}
+  if(cur.type==='multi'){var cols=cur.fields.length>2?2:cur.fields.length;h+='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:10px">';for(var f of cur.fields){h+='<div><input class="text-input" id="qinput_'+f.id+'" type="text" placeholder="'+esc(f.ph||'')+'" value="'+esc(answers[f.id]||'')+'" oninput="answers[\''+f.id+'\']=this.value;checkMultiNext()" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"></div>';}h+='</div>';var allFilled=cur.fields.every(function(f){return !f.req||answers[f.id];});h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(allFilled?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';}
   h+='</div><div class="nav-center"><button class="ghost" onclick="goBack()">'+t.back+'</button></div>';app.innerHTML=h;
   if(cur.type==='text'||cur.type==='loanltv'){var inp=document.getElementById('qinput');if(inp)setTimeout(function(){inp.focus();},100);}
   if(cur.type==='multi'){var inp2=document.getElementById('qinput_'+cur.fields[0].id);if(inp2)setTimeout(function(){inp2.focus();},100);}
