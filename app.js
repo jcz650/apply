@@ -3,7 +3,7 @@ var EMAILJS_PUBLIC_KEY  = 'P0b76QpSqy7Hq_rMR';
 var EMAILJS_SERVICE_ID  = 'service_9gmygbi';
 var EMAILJS_TEMPLATE_ID = 'template_0q403z9';
 var JACK_EMAIL = 'jack.chen@gmccloan.com';
-var APP_VERSION = 'v2026.05.22g';
+var APP_VERSION = 'v2026.05.22h';
 
 try { console.log('[app] loaded ' + APP_VERSION); } catch(e){}
 
@@ -202,6 +202,7 @@ function sendEmail(){
     loan_amount:answers.loanAmount||'',
     property_address:answers.address||'',
     summary:genSummary(),
+    summary_html:genSummaryHtml(),
     mismo_xml:genMISMO(),
     submitted_at:new Date().toLocaleString()
   }).then(function(){
@@ -271,6 +272,76 @@ function genSummary(){var steps=getSteps(),t=LANG[lang],isPurch=answers.transact
     else if(st.type!=="attestation"&&answers[st.id]){if(st.type==="duration"){var p=answers[st.id].split("|");s+=st.q+" "+(p[0]||0)+" yrs, "+(p[1]||0)+" mos\n";}else s+=st.q+" "+answers[st.id]+"\n";}
   }
   return s;
+}
+
+// HTML version of the summary — for email templates that render HTML
+function genSummaryHtml(){
+  var steps=getSteps(),t=LANG[lang],isPurch=answers.transaction===(lang==='en'?'Purchase':'\u8d2d\u623f');
+  var TABLE_OPEN='<table cellpadding="6" cellspacing="0" border="1" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;width:100%;max-width:680px;margin-bottom:14px">';
+  var TABLE_CLOSE='</table>';
+  var H3='<h3 style="font-family:Arial,sans-serif;margin:18px 0 8px 0">';
+  var H3END='</h3>';
+  var row=function(q,a){return '<tr><td style="width:55%;color:#444">'+xmlEsc(q)+'</td><td><b>'+xmlEsc(a)+'</b></td></tr>';};
+  var html='';
+  var sec='';
+  var sectionRows=''; // accumulator for current section's table rows
+
+  function flushSection(){
+    if(sectionRows){
+      html+=H3+xmlEsc(sec)+H3END+TABLE_OPEN+sectionRows+TABLE_CLOSE;
+      sectionRows='';
+    }
+  }
+
+  function dumpDecsHtml(store,list,header){
+    // declarations: keep compact, as small text with bold answers, not a chart
+    var out='<div style="font-family:Arial,sans-serif;font-size:12px;line-height:1.55;margin:6px 0 14px 0;padding:10px 14px;background:#fafafa;border:1px solid #eee"><div style="font-weight:bold;font-size:12px;margin-bottom:6px;color:#555">'+xmlEsc(header)+'</div>';
+    function dumpSubs(subList,store,indent){
+      var r='';
+      for(var i=0;i<subList.length;i++){
+        var sub=subList[i];
+        if(store[sub.id])r+='<div style="margin-left:'+(indent*14)+'px">'+xmlEsc(sub.q)+' <b>'+xmlEsc(store[sub.id])+'</b></div>';
+        if(sub.trigger&&triggerMatch(store[sub.id],sub.trigger.val)){
+          r+=dumpSubs(sub.trigger.show,store,indent+1);
+        }
+      }
+      return r;
+    }
+    for(var i=0;i<list.length;i++){
+      var d=list[i];if(d.purchaseOnly&&!isPurch)continue;
+      out+='<div>'+xmlEsc(d.q)+' <b>'+xmlEsc(store[d.id]||'N/A')+'</b></div>';
+      if(d.trigger&&triggerMatch(store[d.id],d.trigger.val)){out+=dumpSubs(d.trigger.show,store,1);}
+    }
+    out+='</div>';
+    return out;
+  }
+
+  for(var idx=0;idx<steps.length;idx++){
+    var st=steps[idx];
+    if(st.section&&st.section!==sec){
+      flushSection();
+      sec=st.section;
+    }
+    if(st.type==="decProperty"){flushSection();html+=dumpDecsHtml(dec,DEC_PROPERTY[lang],"Borrower - Property & Funding");}
+    else if(st.type==="decFinancial"){flushSection();html+=dumpDecsHtml(dec,DEC_FINANCIAL[lang],"Borrower - Financial History");}
+    else if(st.type==="coDecProperty"){flushSection();html+=dumpDecsHtml(coDec,DEC_PROPERTY[lang],"Co-Borrower - Property & Funding");}
+    else if(st.type==="coDecFinancial"){flushSection();html+=dumpDecsHtml(coDec,DEC_FINANCIAL[lang],"Co-Borrower - Financial History");}
+    else if(st.type==="multi"){
+      var vals=st.fields.map(function(f){return answers[f.id]||'';}).filter(Boolean).join(' ');
+      if(vals)sectionRows+=row(st.q,vals);
+    }
+    else if(st.type==="loanltv"){
+      if(answers.loanAmount)sectionRows+=row('Loan Amount','$'+answers.loanAmount);
+      if(answers.ltvCalc)sectionRows+=row('LTV',answers.ltvCalc+'%');
+    }
+    else if(st.type!=="attestation"&&answers[st.id]){
+      var v=answers[st.id];
+      if(st.type==="duration"){var p=v.split("|");v=(p[0]||0)+' yrs, '+(p[1]||0)+' mos';}
+      sectionRows+=row(st.q,v);
+    }
+  }
+  flushSection();
+  return html;
 }
 
 function goNext(){var steps=getSteps();if(step<steps.length-1)step++;else phase="review";render();}
