@@ -1,4 +1,10 @@
-let lang='en',step=-1,phase='form',answers={},dec={},coDec={},attested=false;
+// EmailJS config — replace with your own from emailjs.com (free 200/mo)
+const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
+const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
+const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+const JACK_EMAIL = 'jack.chen@gmccloan.com';
+
+let lang='en',step=-1,phase='form',answers={},dec={},coDec={},attested=false,emailSent=false;
 
 const LANG={en:{title:"Mortgage Application",subtitle:"with Jack Chen \u00b7 NMLS #2425956",company:"General Mortgage Capital Corporation",start:"Let's Get Started",startSub:"This takes about a few minutes \u2014 nice and easy.",next:"Next \u2192",back:"\u2190 Back",submit:"Submit Application",review:"Review Your Answers",reviewSub:"Make sure everything looks right before submitting.",submitted:"Application Submitted!",submittedSub:"Jack will review your info and reach out shortly.",submittedNote:"Next steps: Jack will send you a DocuSign for authorization (eConsent, credit check & appraisal), and let you know which documents to upload.",copyText:"\ud83d\udccb Copy Summary",copied:"\u2713 Copied!",of:"of",lang:"\u4e2d\u6587",yes:"Yes",no:"No",years:"Years",months:"Months",decTitle:"Declarations",decSub:"Please answer Yes or No to each. These are standard questions required on all mortgage applications.",decProperty:"Property & Funding",decFinancial:"Financial History (Past 7 Years)",coDecTitle:"Co-Borrower Declarations",coDecSub:"Same questions for your co-borrower.",attestTitle:"Borrower Attestation",attestText:"I confirm that the information I've provided is accurate and complete to the best of my knowledge. I understand this information will be used to prepare my official mortgage application (URLA). I authorize the loan officer to use this data to generate my full application and proceed with next steps.",attestCheck:"I have read and agree to the above attestation.",textJack:"\ud83d\udcac Text My Application to Jack",emailJack:"\u2709\ufe0f Email My Application to Jack"},zh:{title:"\u623f\u5c4b\u8d37\u6b3e\u7533\u8bf7",subtitle:"Jack Chen \u00b7 NMLS #2425956",company:"\u4e07\u901a\u8d37\u6b3e\u94f6\u884c",start:"\u5f00\u59cb\u7533\u8bf7",startSub:"\u53ea\u9700\u51e0\u5206\u949f\uff0c\u8f7b\u677e\u586b\u5199\u3002",next:"\u4e0b\u4e00\u6b65 \u2192",back:"\u2190 \u8fd4\u56de",submit:"\u63d0\u4ea4\u7533\u8bf7",review:"\u786e\u8ba4\u60a8\u7684\u56de\u7b54",reviewSub:"\u63d0\u4ea4\u524d\u8bf7\u786e\u8ba4\u4fe1\u606f\u662f\u5426\u6b63\u786e\u3002",submitted:"\u7533\u8bf7\u5df2\u63d0\u4ea4\uff01",submittedSub:"Jack \u5c06\u4f1a\u5ba1\u6838\u60a8\u7684\u4fe1\u606f\u5e76\u5c3d\u5feb\u8054\u7cfb\u60a8\u3002",submittedNote:"\u4e0b\u4e00\u6b65\uff1aJack \u5c06\u901a\u8fc7 DocuSign \u53d1\u9001\u6388\u6743\u4e66\uff08\u7535\u5b50\u7b7e\u7f72\u540c\u610f\u3001\u4fe1\u7528\u5ba1\u6838\u548c\u623f\u5c4b\u4f30\u4ef7\uff09\uff0c\u5e76\u544a\u77e5\u60a8\u9700\u8981\u4e0a\u4f20\u7684\u6587\u4ef6\u3002",copyText:"\ud83d\udccb \u590d\u5236\u6458\u8981",copied:"\u2713 \u5df2\u590d\u5236\uff01",of:"/",lang:"English",yes:"\u662f",no:"\u5426",years:"\u5e74",months:"\u6708",decTitle:"\u8d37\u6b3e\u7533\u8bf7\u4eba\u58f0\u660e",decSub:"\u8bf7\u56de\u7b54\u4ee5\u4e0b\u6807\u51c6\u8d37\u6b3e\u7533\u8bf7\u95ee\u9898\uff0c\u9009\u62e9\u300c\u662f\u300d\u6216\u300c\u5426\u300d\u3002",decProperty:"\u623f\u4ea7\u4e0e\u8d44\u91d1",decFinancial:"\u8d22\u52a1\u5386\u53f2\uff08\u8fc7\u53bb7\u5e74\uff09",coDecTitle:"\u5171\u540c\u501f\u6b3e\u4eba\u58f0\u660e",coDecSub:"\u8bf7\u5171\u540c\u501f\u6b3e\u4eba\u56de\u7b54\u76f8\u540c\u7684\u95ee\u9898\u3002",attestTitle:"\u501f\u6b3e\u4eba\u58f0\u660e",attestText:"\u672c\u4eba\u7279\u6b64\u58f0\u660e\u5e76\u4fdd\u8bc1\uff0c\u672c\u4eba\u5728\u672c\u8868\u683c\u4e2d\u63d0\u4f9b\u7684\u4fe1\u606f\u5747\u771f\u5b9e\u3001\u51c6\u786e\u3001\u5b8c\u6574\uff0c\u4e14\u7b26\u5408\u672c\u4eba\u6240\u77e5\u7684\u6700\u4f73\u60c5\u51b5\u3002\u672c\u4eba\u7406\u89e3\u5e76\u540c\u610f\uff0c\u8be5\u4fe1\u606f\u5c06\u7528\u4e8e\u51c6\u5907\u672c\u4eba\u6b63\u5f0f\u62b5\u62bc\u8d37\u6b3e\u7533\u8bf7\uff08URLA\uff09\u3002\u672c\u4eba\u901a\u8fc7\u52fe\u9009\u4e0b\u65b9\u590d\u9009\u6846\uff0c\u660e\u786e\u6388\u6743\u8d37\u6b3e\u4e13\u5458\u4f7f\u7528\u672c\u8868\u683c\u6240\u8f7d\u4fe1\u606f\uff0c\u4ee5\u751f\u6210\u5b8c\u6574\u7684\u8d37\u6b3e\u7533\u8bf7\uff0c\u5e76\u63a8\u8fdb\u76f8\u5173\u8d37\u6b3e\u5ba1\u6279\u6d41\u7a0b\u3002",attestCheck:"\u672c\u4eba\u5df2\u9605\u8bfb\u5e76\u540c\u610f\u4e0a\u8ff0\u58f0\u660e\uff0c\u5e76\u63d0\u4ea4\u672c\u7533\u8bf7\u3002",textJack:"\ud83d\udcac \u53d1\u9001\u7533\u8bf7\u77ed\u4fe1\u7ed9 Jack",emailJack:"\u2709\ufe0f \u53d1\u9001\u7533\u8bf7\u90ae\u4ef6\u7ed9 Jack"}};
 
@@ -71,19 +77,19 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function calcLTV(){var loan=parseFloat(String(answers.loanAmount||'').replace(/[^0-9.]/g,''));var val=parseFloat(String(answers.purchasePrice||answers.appraisedValue||'').replace(/[^0-9.]/g,''));if(loan&&val&&val>0){answers.ltvCalc=(loan/val*100).toFixed(3);}else{answers.ltvCalc='';}}
 function calcLoanFromLTV(){var ltv=parseFloat(String(answers.ltvCalc||'').replace(/[^0-9.]/g,''));var val=parseFloat(String(answers.purchasePrice||answers.appraisedValue||'').replace(/[^0-9.]/g,''));if(ltv&&val&&val>0){answers.loanAmount=Math.round(val*ltv/100).toString();}}
 
-// handleDec reads raw data-val (never HTML-escaped) so the stored value
-// matches exactly what trigger comparisons expect (e.g. "Yes", "\u662f", "No", "\u5426")
+// handleDec: stores the raw value from data-val directly into dec/coDec
+// data-val contains the EXACT same string used for comparison in render()
 function handleDec(btn){
   var sv=btn.getAttribute('data-sv');
   var id=btn.getAttribute('data-did');
   var val=btn.getAttribute('data-val');
-  if(sv&&id&&(val!==null)){window[sv][id]=val;render();}
+  if(sv&&id&&val!==null){window[sv][id]=val;render();}
 }
 function handleDecToggle(btn){
   var sv=btn.getAttribute('data-sv');
   var id=btn.getAttribute('data-did');
   var val=btn.getAttribute('data-val');
-  if(!sv||!id||(val===null))return;
+  if(!sv||!id||val===null)return;
   var arr=(window[sv][id]||'').split(',').filter(Boolean);
   var i=arr.indexOf(val);if(i>=0)arr.splice(i,1);else arr.push(val);
   window[sv][id]=arr.join(',');render();
@@ -101,25 +107,24 @@ function render(){
     var isFin=(cur.type==='decFinancial'||cur.type==='coDecFinancial');
     var store=isCo?coDec:dec;
     var sv=isCo?'coDec':'dec';
+    // yL/nL are the actual characters — stored in data-val AND used for .sel comparison
     var yL=lang==='en'?'Yes':'\u662f';
     var nL=lang==='en'?'No':'\u5426';
     var decList=isFin?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];
     function buildSubs(subList){
       var r='';
       for(var si=0;si<subList.length;si++){
-        var sub=subList[si];
-        var sid=sub.id;
+        var sub=subList[si];var sid=sub.id;
         if(sub.type==='choice'){
           r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-          // KEY FIX: use raw opt as data-val (not esc(opt)) so handleDec stores the real string
-          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var sel=(store[sid]===opt)?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+opt+'" onclick="handleDec(this)">'+esc(opt)+'</button>';}
+          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var osel=(store[sid]===opt)?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+osel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+opt+'" onclick="handleDec(this)">'+opt+'</button>';}
           r+='</div>';
           if(sub.trigger&&store[sid]===sub.trigger.val){r+=buildSubs(sub.trigger.show);}
           r+='</div>';
         }else if(sub.type==='multicheck'){
           var cv=(store[sid]||'').split(',').filter(Boolean);
           r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:8px">'+sub.q+' <span style="color:#b45309;font-size:.75rem">(select all)</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var sel=cv.indexOf(opt)>=0?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+sel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+opt+'" onclick="handleDecToggle(this)">'+esc(opt)+'</button>';}
+          for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var osel=cv.indexOf(opt)>=0?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button class="pill" style="padding:10px;font-size:.82rem'+osel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+opt+'" onclick="handleDecToggle(this)">'+opt+'</button>';}
           r+='</div></div>';
         }else if(sub.type==='text'){
           r+='<div style="padding:8px 0 8px 20px;border-left:3px solid #f0e4d0;margin-left:4px;margin-top:4px"><div style="font-size:.82rem;color:#4a3f32;margin-bottom:6px">'+sub.q+'</div><input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+esc(sub.ph||'')+'" value="'+esc(store[sid]||'')+'" oninput="(function(el){window['+JSON.stringify(sv)+']['+JSON.stringify(sid)+']=el.value;})(this)"></div>';
@@ -137,8 +142,8 @@ function render(){
       var did=d.id;
       var ysel=(store[did]===yL)?' sel':'';
       var nsel=(store[did]===nL)?' sel':'';
+      // data-val holds EXACT same value that render() compares against yL/nL
       h+='<div class="dec-row"><div class="dec-q">'+d.q+'</div><div class="dec-btns">';
-      // KEY FIX: data-val uses raw yL/nL (not esc()) so getAttribute returns the real char
       h+='<button class="dec-btn'+ysel+'" data-sv="'+sv+'" data-did="'+did+'" data-val="'+yL+'" onclick="handleDec(this)">'+yL+'</button>';
       h+='<button class="dec-btn'+nsel+'" data-sv="'+sv+'" data-did="'+did+'" data-val="'+nL+'" onclick="handleDec(this)">'+nL+'</button>';
       h+='</div></div>';
@@ -154,7 +159,7 @@ function render(){
   if(cur.type==='text'){var canGo=cur.req?!!answers[cur.id]:true;h+='<input class="text-input" id="qinput" type="text" placeholder="'+esc(cur.ph||'')+'" value="'+esc(answers[cur.id]||'')+'" oninput="answers[\''+cur.id+'\']=this.value;document.getElementById(\'nextbtn\').disabled=this.value===\'\'&&'+cur.req+'" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"><button class="primary" id="nextbtn" style="margin-top:16px" '+(canGo?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';}
   if(cur.type==='loanltv'){calcLTV();h+='<input class="text-input" id="qinput" type="text" placeholder="$ Amount" value="'+esc(answers.loanAmount||'')+'" oninput="answers.loanAmount=this.value;calcLTV();document.getElementById(\'ltvField\').value=answers.ltvCalc||\'\';document.getElementById(\'nextbtn\').disabled=!this.value;">';h+='<div class="ltv-row"><span class="ltv-label">LTV:</span><input class="ltv-input" id="ltvField" type="text" placeholder="0.000%" value="'+esc(answers.ltvCalc||'')+'" oninput="answers.ltvCalc=this.value;calcLoanFromLTV();document.getElementById(\'qinput\').value=answers.loanAmount||\'\';">';h+='<span class="ltv-label">%</span></div>';var canGo=!!answers.loanAmount;h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(canGo?'':'disabled')+' onclick="goNext()">'+t.next+'</button>';}
   if(cur.type==='dropdowns'){var occOpts=lang==='en'?["","Primary Residence","Second Home","Investment Property"]:["","\u81ea\u4f4f\u623f","\u5ea6\u5047\u5c4b","\u6295\u8d44\u623f"];var occL=lang==='en'?["Select occupancy...","Primary Residence","Second Home","Investment Property"]:["\u8bf7\u9009\u62e9...","\u81ea\u4f4f\u623f","\u5ea6\u5047\u5c4b","\u6295\u8d44\u623f"];var ptOpts=lang==='en'?["","Single Family","2-Family","3-Family","4-Family","Condo / Townhouse","PUD","Co-op"]:["","\u4e00\u5bb6\u5ead","\u4e24\u5bb6\u5ead","\u4e09\u5bb6\u5ead","\u56db\u5bb6\u5ead","Condo/Townhouse","PUD","Co-op"];var ptL=lang==='en'?["Select property type...","Single Family","2-Family","3-Family","4-Family","Condo / Townhouse","PUD","Co-op"]:["\u8bf7\u9009\u62e9...","\u4e00\u5bb6\u5ead","\u4e24\u5bb6\u5ead","\u4e09\u5bb6\u5ead","\u56db\u5bb6\u5ead","Condo/Townhouse","PUD","Co-op"];h+='<div style="margin-bottom:14px"><label class="dur-label">'+(lang==='en'?'Occupancy':'\u623f\u5c4b\u7528\u9014')+'</label><select class="dur-select" onchange="answers.occupancy=this.value;checkDropdowns()"><option value="">'+(lang==='en'?'Select...':'\u8bf7\u9009\u62e9...')+'</option>';for(var i=1;i<occOpts.length;i++)h+='<option value="'+esc(occOpts[i])+'"'+(answers.occupancy===occOpts[i]?' selected':'')+'>'+occL[i]+'</option>';h+='</select></div>';h+='<div><label class="dur-label">'+(lang==='en'?'Property Type':'\u623f\u4ea7\u7c7b\u578b')+'</label><select class="dur-select" onchange="answers.propertyType=this.value;checkDropdowns()"><option value="">'+(lang==='en'?'Select...':'\u8bf7\u9009\u62e9...')+'</option>';for(var i=1;i<ptOpts.length;i++)h+='<option value="'+esc(ptOpts[i])+'"'+(answers.propertyType===ptOpts[i]?' selected':'')+'>'+ptL[i]+'</option>';h+='</select></div>';var ddOk=!!answers.occupancy&&!!answers.propertyType;h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(ddOk?'':'disabled')+' onclick="goNext()">'+t.next+'</button>';}
-  if(cur.type==='duration'){var parsed=(answers[cur.id]||'').split('|'),yrs=parsed[0]||'',mos=parsed[1]||'';h+='<div class="dur-wrap"><div style="flex:1"><label class="dur-label">'+t.years+'</label><select class="dur-select" onchange="answers[\''+cur.id+'\']=this.value+\'|\'+(answers[\''+cur.id+'\']||\'\').split(\'|\')[1]||\'\';render()"><option value="">--</option>';for(var i=0;i<=30;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div><div style="flex:1"><label class="dur-label">'+t.months+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']||\'\').split(\'|\');answers[\''+cur.id+'\']=(p[0]||\'\')+\'|\'+this.value;render()"><option value="">--</option>';for(var i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div></div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button>';}
+  if(cur.type==='duration'){var parsed=(answers[cur.id]||'').split('|'),yrs=parsed[0]||'',mos=parsed[1]||'';h+='<div class="dur-wrap"><div style="flex:1"><label class="dur-label">'+t.years+'</label><select class="dur-select" onchange="answers[\''+cur.id+'\' ]=this.value+\'|\'+(answers[\''+cur.id+'\']||\'\').split(\'|\')[1]||\'\';render()"><option value="">--</option>';for(var i=0;i<=30;i++)h+='<option value="'+i+'"'+(yrs==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div><div style="flex:1"><label class="dur-label">'+t.months+'</label><select class="dur-select" onchange="var p=(answers[\''+cur.id+'\']||\'\').split(\'|\');answers[\''+cur.id+'\']=(p[0]||\'\')+\'|\'+this.value;render()"><option value="">--</option>';for(var i=0;i<12;i++)h+='<option value="'+i+'"'+(mos==String(i)?' selected':'')+'>'+i+'</option>';h+='</select></div></div><button class="primary" style="margin-top:16px" onclick="goNext()">'+t.next+'</button>';}
   if(cur.type==='multi'){var cols=cur.fields.length>2?2:cur.fields.length;h+='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:10px">';for(var f of cur.fields){h+='<div><input class="text-input" id="qinput_'+f.id+'" type="text" placeholder="'+esc(f.ph||'')+'" value="'+esc(answers[f.id]||'')+'" oninput="answers[\''+f.id+'\' ]=this.value;checkMultiNext()" onkeydown="if(event.key===\'Enter\'&&!document.getElementById(\'nextbtn\').disabled)goNext()"></div>';}h+='</div>';var allFilled=cur.fields.every(function(f){return !f.req||answers[f.id];});h+='<button class="primary" id="nextbtn" style="margin-top:16px" '+(allFilled?'':'disabled')+' onclick="goNext()">'+(step===total-1?t.review:t.next)+'</button>';}
   h+='</div><div class="nav-center"><button class="ghost" onclick="goBack()">'+t.back+'</button></div>';app.innerHTML=h;
   if(cur.type==='text'||cur.type==='loanltv'){var inp=document.getElementById('qinput');if(inp)setTimeout(function(){inp.focus();},100);}
