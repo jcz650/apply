@@ -1,7 +1,7 @@
-// EmailJS config — replace with your own from emailjs.com (free 200/mo)
-var EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
-var EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
-var EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+// EmailJS config
+var EMAILJS_PUBLIC_KEY  = 'P0b76QpSqy7Hq_rMR';
+var EMAILJS_SERVICE_ID  = 'service_9gmygbi';
+var EMAILJS_TEMPLATE_ID = 'template_0q403z9';
 var JACK_EMAIL = 'jack.chen@gmccloan.com';
 
 var lang='en',step=-1,phase='form',answers={},dec={},coDec={},attested=false,emailSent=false;
@@ -86,12 +86,15 @@ return xml;}
 function sendEmail(){
   if(emailSent)return;
   if(EMAILJS_PUBLIC_KEY==='YOUR_PUBLIC_KEY'){
-    // EmailJS not configured — show a message; backup mailto link is provided on done screen
-    var el=document.getElementById('email-status');if(el){el.textContent='Email service not configured — please contact Jack directly at jack.chen@gmccloan.com';el.className='status-msg err';}
+    var el=document.getElementById('email-status');if(el){el.textContent='Email service not configured \u2014 please contact Jack directly at jack.chen@gmccloan.com';el.className='status-msg err';}
     return;
   }
-  if(typeof emailjs==='undefined'){return;}
-  emailjs.init(EMAILJS_PUBLIC_KEY);
+  if(typeof emailjs==='undefined'){
+    console.warn('EmailJS SDK not loaded');
+    var el=document.getElementById('email-status');if(el){el.textContent=LANG[lang].sendFailed;el.className='status-msg err';}
+    return;
+  }
+  try{emailjs.init(EMAILJS_PUBLIC_KEY);}catch(e){console.warn('emailjs.init failed',e);}
   emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
     to_email:JACK_EMAIL,
     subject:'New Loan Application - '+(answers.borrowerFirst||'')+' '+(answers.borrowerLast||''),
@@ -108,13 +111,13 @@ function sendEmail(){
     emailSent=true;
     var el=document.getElementById('email-status');if(el){el.textContent=LANG[lang].sentToJack;el.className='status-msg ok';}
   }).catch(function(err){
+    console.error('EmailJS send failed',err);
     var el=document.getElementById('email-status');if(el){el.textContent=LANG[lang].sendFailed;el.className='status-msg err';}
   });
 }
 
 function getSteps(){var t=LANG[lang],isPurch=answers.transaction===(lang==='en'?'Purchase':'\u8d2d\u623f'),hasCo=answers.coborrower===t.yes;var isW2=answers.incomeType===(lang==='en'?'W2 / Salary':'\u5de5\u8d44\u6536\u5165 (W2)');var isSE=answers.incomeType===(lang==='en'?'Self-Employed':'\u81ea\u96c7');var skip=answers.incomeType===(lang==='en'?'Other (Skip)':'\u5176\u4ed6(\u8df3\u8fc7)');var s=[];if(lang==='en'){s.push({id:"borrowerInfo",section:"About You",q:"What's your name and contact info?",type:"multi",fields:[{id:"borrowerFirst",ph:"First name",req:true},{id:"borrowerLast",ph:"Last name",req:true},{id:"email",ph:"Email address",req:true},{id:"phone",ph:"Phone number",req:true}],req:true});s.push({id:"coborrower",q:"Will you be applying with a co-borrower?",type:"choice",opts:["Yes","No"],req:true});if(hasCo)s.push({id:"coInfo",q:"Co-borrower's name and contact info?",type:"multi",fields:[{id:"coFirst",ph:"First name",req:true},{id:"coLast",ph:"Last name",req:true},{id:"coEmail",ph:"Email address",req:true},{id:"coPhone",ph:"Phone number",req:true}],req:true});s.push({id:"transaction",section:"Property",q:"Are you purchasing or refinancing?",type:"choice",opts:["Purchase","Refinance"],req:true});s.push({id:"propDetails",q:"Property details",type:"dropdowns",req:true});s.push({id:"address",q:"Property address?",sub:"If you don't have one yet, enter the city & state you're looking in.",type:"text",ph:"Street, City, State, ZIP",req:true});if(isPurch)s.push({id:"purchasePrice",q:"What's the purchase price?",type:"text",ph:"$ Amount",req:true});else if(answers.transaction)s.push({id:"appraisedValue",q:"Estimated property value?",type:"text",ph:"$ Amount",req:true});s.push({id:"loanAmount",q:"Desired loan amount?",type:"loanltv",req:true});s.push({id:"incomeType",section:"Income",q:"What's your income type?",type:"choice",opts:["W2 / Salary","Self-Employed","Other (Skip)"],req:true});if(isW2){s.push({id:"employerName",q:"Employer name?",type:"text",ph:"Company name",req:true});s.push({id:"position",q:"Your position / title?",type:"text",ph:"e.g. Marketing Manager",req:true});s.push({id:"duration",q:"How long have you worked there?",type:"duration",req:true});if(needsPrevEmployer(answers.duration)){s.push({id:"prevEmployerName",q:"Previous employer name?",type:"text",ph:"Previous company",req:true});s.push({id:"prevPosition",q:"Previous position / title?",type:"text",ph:"e.g. Sales Associate",req:true});s.push({id:"prevDuration",q:"How long at previous employer?",type:"duration",req:true});}}if(isSE){s.push({id:"businessName",q:"Business name?",type:"text",ph:"Business name",req:true});s.push({id:"ownershipShare",q:"Do you own 25% or more?",type:"choice",opts:["Yes, 25% or more","Less than 25%"],req:true});s.push({id:"duration",q:"How long have you been self-employed?",type:"duration",req:true});if(needsPrevEmployer(answers.duration)){s.push({id:"prevEmployerName",q:"Previous employer/business name?",type:"text",ph:"Previous company",req:true});s.push({id:"prevPosition",q:"Previous position / title?",type:"text",ph:"Position",req:true});s.push({id:"prevDuration",q:"How long at previous employer?",type:"duration",req:true});}}if(hasCo&&!skip){s.push({id:"coIncomeType",section:"Co-Borrower Income",q:"Co-borrower's income type?",type:"choice",opts:["W2 / Salary","Self-Employed","Other (Skip)"],req:true});var coW2=answers.coIncomeType==="W2 / Salary",coSE=answers.coIncomeType==="Self-Employed";if(coW2){s.push({id:"coEmployerName",q:"Co-borrower's employer?",type:"text",ph:"Company name",req:true});s.push({id:"coPosition",q:"Co-borrower's position?",type:"text",ph:"Position",req:true});s.push({id:"coDuration",q:"How long?",type:"duration",req:true});if(needsPrevEmployer(answers.coDuration)){s.push({id:"coPrevEmployer",q:"Co-borrower's previous employer?",type:"text",ph:"Previous company",req:true});s.push({id:"coPrevPosition",q:"Previous position?",type:"text",ph:"Position",req:true});s.push({id:"coPrevDuration",q:"How long?",type:"duration",req:true});}}if(coSE){s.push({id:"coBusinessName",q:"Business name?",type:"text",ph:"Business name",req:true});s.push({id:"coOwnership",q:"Own 25% or more?",type:"choice",opts:["Yes, 25% or more","Less than 25%"],req:true});s.push({id:"coDuration",q:"How long?",type:"duration",req:true});}}s.push({id:"decProperty",section:"Declarations",q:"",type:"decProperty",req:true});s.push({id:"decFinancial",section:"Declarations",q:"",type:"decFinancial",req:true});if(hasCo){s.push({id:"coDecProperty",section:"Co-Borrower Declarations",q:"",type:"coDecProperty",req:true});s.push({id:"coDecFinancial",section:"Co-Borrower Declarations",q:"",type:"coDecFinancial",req:true});}s.push({id:"attestation",section:"Submit",q:"",type:"attestation",req:true});}else{s.push({id:"borrowerInfo",section:"\u4e2a\u4eba\u4fe1\u606f",q:"\u60a8\u7684\u59d3\u540d\u548c\u8054\u7cfb\u65b9\u5f0f\uff1f",type:"multi",fields:[{id:"borrowerFirst",ph:"\u540d",req:true},{id:"borrowerLast",ph:"\u59d3",req:true},{id:"email",ph:"\u7535\u5b50\u90ae\u7bb1",req:true},{id:"phone",ph:"\u7535\u8bdd\u53f7\u7801",req:true}],req:true});s.push({id:"coborrower",q:"\u662f\u5426\u6709\u5171\u540c\u501f\u6b3e\u4eba\uff1f",type:"choice",opts:["\u662f","\u5426"],req:true});if(hasCo)s.push({id:"coInfo",q:"\u5171\u540c\u501f\u6b3e\u4eba\u7684\u59d3\u540d\u548c\u8054\u7cfb\u65b9\u5f0f\uff1f",type:"multi",fields:[{id:"coFirst",ph:"\u540d",req:true},{id:"coLast",ph:"\u59d3",req:true},{id:"coEmail",ph:"\u7535\u5b50\u90ae\u7bb1",req:true},{id:"coPhone",ph:"\u7535\u8bdd\u53f7\u7801",req:true}],req:true});s.push({id:"transaction",section:"\u623f\u4ea7\u4fe1\u606f",q:"\u60a8\u662f\u8d2d\u623f\u8fd8\u662f\u91cd\u65b0\u8d37\u6b3e\uff1f",type:"choice",opts:["\u8d2d\u623f","\u91cd\u65b0\u8d37\u6b3e"],req:true});s.push({id:"propDetails",q:"\u623f\u4ea7\u8be6\u60c5",type:"dropdowns",req:true});s.push({id:"address",q:"\u623f\u4ea7\u5730\u5740\uff1f",sub:"\u5982\u5c1a\u672a\u786e\u5b9a\uff0c\u8bf7\u8f93\u5165\u610f\u5411\u57ce\u5e02\u548c\u5dde\u3002",type:"text",ph:"\u8857\u9053, \u57ce\u5e02, \u5dde, \u90ae\u7f16",req:true});if(isPurch)s.push({id:"purchasePrice",q:"\u8d2d\u4e70\u4ef7\u683c\uff1f",type:"text",ph:"$ \u91d1\u989d",req:true});else if(answers.transaction)s.push({id:"appraisedValue",q:"\u623f\u4ea7\u9884\u4f30\u4ef7\u503c\uff1f",type:"text",ph:"$ \u91d1\u989d",req:true});s.push({id:"loanAmount",q:"\u671f\u671b\u8d37\u6b3e\u91d1\u989d\uff1f",type:"loanltv",req:true});s.push({id:"incomeType",section:"\u6536\u5165\u4fe1\u606f",q:"\u60a8\u7684\u6536\u5165\u7c7b\u578b\uff1f",type:"choice",opts:["\u5de5\u8d44\u6536\u5165 (W2)","\u81ea\u96c7","\u5176\u4ed6(\u8df3\u8fc7)"],req:true});if(isW2){s.push({id:"employerName",q:"\u96c7\u4e3b\u540d\u79f0\uff1f",type:"text",ph:"\u516c\u53f8\u540d\u79f0",req:true});s.push({id:"position",q:"\u60a8\u7684\u804c\u4f4d\uff1f",type:"text",ph:"\u4f8b\u5982\uff1a\u5e02\u573a\u7ecf\u7406",req:true});s.push({id:"duration",q:"\u5728\u8be5\u516c\u53f8\u5de5\u4f5c\u591a\u957f\u65f6\u95f4\uff1f",type:"duration",req:true});if(needsPrevEmployer(answers.duration)){s.push({id:"prevEmployerName",q:"\u524d\u96c7\u4e3b\u540d\u79f0\uff1f",type:"text",ph:"\u524d\u516c\u53f8\u540d\u79f0",req:true});s.push({id:"prevPosition",q:"\u524d\u804c\u4f4d\uff1f",type:"text",ph:"\u804c\u4f4d",req:true});s.push({id:"prevDuration",q:"\u5728\u524d\u96c7\u4e3b\u5de5\u4f5c\u591a\u957f\u65f6\u95f4\uff1f",type:"duration",req:true});}}if(isSE){s.push({id:"businessName",q:"\u4f01\u4e1a\u540d\u79f0\uff1f",type:"text",ph:"\u4f01\u4e1a\u540d\u79f0",req:true});s.push({id:"ownershipShare",q:"\u662f\u5426\u62e5\u670925%\u4ee5\u4e0a\u80a1\u4efd\uff1f",type:"choice",opts:["\u662f\uff0c25%\u4ee5\u4e0a","\u4f4e\u4e8e25%"],req:true});s.push({id:"duration",q:"\u81ea\u96c7\u591a\u957f\u65f6\u95f4\uff1f",type:"duration",req:true});if(needsPrevEmployer(answers.duration)){s.push({id:"prevEmployerName",q:"\u524d\u96c7\u4e3b/\u4f01\u4e1a\u540d\u79f0\uff1f",type:"text",ph:"\u524d\u516c\u53f8\u540d\u79f0",req:true});s.push({id:"prevPosition",q:"\u524d\u804c\u4f4d\uff1f",type:"text",ph:"\u804c\u4f4d",req:true});s.push({id:"prevDuration",q:"\u5728\u524d\u96c7\u4e3b\u5de5\u4f5c\u591a\u957f\u65f6\u95f4\uff1f",type:"duration",req:true});}}if(hasCo&&!skip){s.push({id:"coIncomeType",section:"\u5171\u540c\u501f\u6b3e\u4eba\u6536\u5165",q:"\u5171\u540c\u501f\u6b3e\u4eba\u7684\u6536\u5165\u7c7b\u578b\uff1f",type:"choice",opts:["\u5de5\u8d44\u6536\u5165 (W2)","\u81ea\u96c7","\u5176\u4ed6(\u8df3\u8fc7)"],req:true});var coW2=answers.coIncomeType==="\u5de5\u8d44\u6536\u5165 (W2)",coSE=answers.coIncomeType==="\u81ea\u96c7";if(coW2){s.push({id:"coEmployerName",q:"\u5171\u540c\u501f\u6b3e\u4eba\u7684\u96c7\u4e3b\uff1f",type:"text",ph:"\u516c\u53f8\u540d\u79f0",req:true});s.push({id:"coPosition",q:"\u5171\u540c\u501f\u6b3e\u4eba\u7684\u804c\u4f4d\uff1f",type:"text",ph:"\u804c\u4f4d",req:true});s.push({id:"coDuration",q:"\u5de5\u4f5c\u591a\u957f\u65f6\u95f4\uff1f",type:"duration",req:true});if(needsPrevEmployer(answers.coDuration)){s.push({id:"coPrevEmployer",q:"\u5171\u540c\u501f\u6b3e\u4eba\u7684\u524d\u96c7\u4e3b\uff1f",type:"text",ph:"\u524d\u516c\u53f8\u540d\u79f0",req:true});s.push({id:"coPrevPosition",q:"\u524d\u804c\u4f4d\uff1f",type:"text",ph:"\u804c\u4f4d",req:true});s.push({id:"coPrevDuration",q:"\u5de5\u4f5c\u591a\u957f\u65f6\u95f4\uff1f",type:"duration",req:true});}}if(coSE){s.push({id:"coBusinessName",q:"\u4f01\u4e1a\u540d\u79f0\uff1f",type:"text",ph:"\u4f01\u4e1a\u540d\u79f0",req:true});s.push({id:"coOwnership",q:"\u662f\u5426\u62e5\u670925%\u4ee5\u4e0a\u80a1\u4efd\uff1f",type:"choice",opts:["\u662f\uff0c25%\u4ee5\u4e0a","\u4f4e\u4e8e25%"],req:true});s.push({id:"coDuration",q:"\u81ea\u96c7\u591a\u957f\u65f6\u95f4\uff1f",type:"duration",req:true});}}s.push({id:"decProperty",section:"\u58f0\u660e",q:"",type:"decProperty",req:true});s.push({id:"decFinancial",section:"\u58f0\u660e",q:"",type:"decFinancial",req:true});if(hasCo){s.push({id:"coDecProperty",section:"\u5171\u540c\u501f\u6b3e\u4eba\u58f0\u660e",q:"",type:"coDecProperty",req:true});s.push({id:"coDecFinancial",section:"\u5171\u540c\u501f\u6b3e\u4eba\u58f0\u660e",q:"",type:"coDecFinancial",req:true});}s.push({id:"attestation",section:"\u63d0\u4ea4",q:"",type:"attestation",req:true});}return s;}
 
-// Check all dec/coDec questions answered (including triggered sub-questions). Returns true if all complete.
 function allDecAnswered(store,isFin,isPurch){
   var list=isFin?DEC_FINANCIAL[lang]:DEC_PROPERTY[lang];
   function checkSubs(subList){
@@ -181,7 +184,6 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function calcLTV(){var loan=parseFloat(String(answers.loanAmount||'').replace(/[^0-9.]/g,''));var val=parseFloat(String(answers.purchasePrice||answers.appraisedValue||'').replace(/[^0-9.]/g,''));if(loan&&val&&val>0){answers.ltvCalc=(loan/val*100).toFixed(3);}else{answers.ltvCalc='';}}
 function calcLoanFromLTV(){var ltv=parseFloat(String(answers.ltvCalc||'').replace(/[^0-9.]/g,''));var val=parseFloat(String(answers.purchasePrice||answers.appraisedValue||'').replace(/[^0-9.]/g,''));if(ltv&&val&&val>0){answers.loanAmount=Math.round(val*ltv/100).toString();}}
 
-// Yes/No button handler
 window.handleDec = function(btn){
   var sv = btn.getAttribute('data-sv');
   var id = btn.getAttribute('data-did');
@@ -193,8 +195,6 @@ window.handleDec = function(btn){
   if (sv === 'coDec') coDec = window.coDec;
   render();
 };
-
-// Dropdown handler for sub-questions
 window.handleDecDropdown = function(sel){
   var sv = sel.getAttribute('data-sv');
   var id = sel.getAttribute('data-did');
@@ -203,11 +203,8 @@ window.handleDecDropdown = function(sel){
   window[sv][id] = sel.value;
   if (sv === 'dec') dec = window.dec;
   if (sv === 'coDec') coDec = window.coDec;
-  // re-render to update Next button enabled state
   render();
 };
-
-// Text input handler for sub-questions — doesn't re-render (keeps focus)
 window.handleDecText = function(inp){
   var sv = inp.getAttribute('data-sv');
   var id = inp.getAttribute('data-did');
@@ -216,7 +213,6 @@ window.handleDecText = function(inp){
   window[sv][id] = inp.value;
   if (sv === 'dec') dec = window.dec;
   if (sv === 'coDec') coDec = window.coDec;
-  // update Next button only
   updateDecNextButton();
 };
 
@@ -284,7 +280,6 @@ function render(){
     app.innerHTML=h;return;
   }
   document.body.style.justifyContent='center';
-  // --- DECLARATIONS PAGE ---
   if(cur.type==='decProperty'||cur.type==='decFinancial'||cur.type==='coDecProperty'||cur.type==='coDecFinancial'){
     var isCo=(cur.type==='coDecProperty'||cur.type==='coDecFinancial');
     var isFin=(cur.type==='decFinancial'||cur.type==='coDecFinancial');
@@ -304,14 +299,12 @@ function render(){
           for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];r+='<option value="'+esc(opt)+'"'+(store[sid]===opt?' selected':'')+'>'+esc(opt)+'</option>';}
           r+='</select></div>';
         }else if(sub.type==='choice'){
-          // legacy pill style — unused but kept for compatibility
           r+='<div style="'+indent+'"><div class="sub-label">'+sub.q+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
           for(var oi=0;oi<sub.opts.length;oi++){var opt=sub.opts[oi];var sel=(store[sid]===opt)?';border:2px solid #b45309;background:#b45309;color:#fff;font-weight:600':'';r+='<button type="button" class="pill" style="padding:10px;font-size:.82rem'+sel+'" data-sv="'+sv+'" data-did="'+sid+'" data-val="'+esc(opt)+'" onclick="window.handleDec(this)">'+esc(opt)+'</button>';}
           r+='</div></div>';
         }else if(sub.type==='text'){
           r+='<div style="'+indent+'"><div class="sub-label">'+sub.q+'</div><input class="text-input" style="padding:10px 14px;font-size:.88rem" placeholder="'+esc(sub.ph||'')+'" value="'+esc(store[sid]||'')+'" data-sv="'+sv+'" data-did="'+sid+'" oninput="window.handleDecText(this)"></div>';
         }
-        // recurse for nested triggers
         if(sub.trigger&&store[sid]===sub.trigger.val){r+=buildSubs(sub.trigger.show);}
       }
       return r;
