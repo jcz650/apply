@@ -3,7 +3,7 @@ var EMAILJS_PUBLIC_KEY  = 'P0b76QpSqy7Hq_rMR';
 var EMAILJS_SERVICE_ID  = 'service_9gmygbi';
 var EMAILJS_TEMPLATE_ID = 'template_0q403z9';
 var JACK_EMAIL = 'jack.chen@gmccloan.com';
-var APP_VERSION = 'v2026.05.22j';
+var APP_VERSION = 'v2026.05.23a';
 
 try { console.log('[app] loaded ' + APP_VERSION); } catch(e){}
 
