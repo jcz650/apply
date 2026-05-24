@@ -396,7 +396,11 @@ window.handleDec = function(btn){
   window[sv][id] = val;
   if (sv === 'dec') dec = window.dec;
   if (sv === 'coDec') coDec = window.coDec;
+  var sa = document.querySelector('.scroll-area');
+  var sy = sa ? sa.scrollTop : 0;
   render();
+  var sa2 = document.querySelector('.scroll-area');
+  if (sa2) sa2.scrollTop = sy;
 };
 window.handleDecDropdown = function(sel){
   var sv = sel.getAttribute('data-sv');
@@ -406,7 +410,11 @@ window.handleDecDropdown = function(sel){
   window[sv][id] = sel.value;
   if (sv === 'dec') dec = window.dec;
   if (sv === 'coDec') coDec = window.coDec;
+  var sa = document.querySelector('.scroll-area');
+  var sy = sa ? sa.scrollTop : 0;
   render();
+  var sa2 = document.querySelector('.scroll-area');
+  if (sa2) sa2.scrollTop = sy;
 };
 window.handleDecText = function(inp){
   var sv = inp.getAttribute('data-sv');
