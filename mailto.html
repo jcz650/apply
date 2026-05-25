@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Opening your email app...</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; margin: 0; background: #f5f7fa; color: #333;
+    text-align: center; padding: 20px; box-sizing: border-box;
+  }
+  .card {
+    background: white; padding: 40px 30px; border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 420px;
+  }
+  h1 { margin: 0 0 12px; font-size: 22px; color: #1a73e8; }
+  p { margin: 0 0 16px; line-height: 1.5; color: #555; }
+  .button {
+    display: inline-block; background: #1a73e8; color: white;
+    padding: 14px 28px; border-radius: 8px; text-decoration: none;
+    font-weight: 600; margin-top: 8px; font-size: 16px;
+  }
+  .button:hover { background: #1557b0; }
+  .small { font-size: 13px; color: #888; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>📧 Opening Outlook...</h1>
+  <p id="status">Your email draft should open automatically.</p>
+  <a id="manual" class="button" href="#">Tap here if it didn't open</a>
+  <p class="small">This opens Outlook desktop on Windows, or Outlook app on your phone.</p>
+</div>
+
+<script>
+  // Read all URL params and rebuild as mailto:
+  const params = new URLSearchParams(window.location.search);
+  const to = params.get('to') || '';
+  const subject = params.get('subject') || '';
+  const body = params.get('body') || '';
+
+  let mailto = 'mailto:' + encodeURIComponent(to);
+  const qs = [];
+  if (subject) qs.push('subject=' + encodeURIComponent(subject));
+  if (body)    qs.push('body=' + encodeURIComponent(body));
+  if (qs.length) mailto += '?' + qs.join('&');
+
+  // Set the manual button's href
+  document.getElementById('manual').href = mailto;
+
+  // Auto-redirect after a tiny delay (lets the page render first)
+  setTimeout(function() {
+    window.location.href = mailto;
+  }, 150);
+</script>
+</body>
+</html>
